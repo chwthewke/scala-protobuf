@@ -35,7 +35,7 @@ object ScalaProtobufBuild extends Build {
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults :+
       (name := "scala-protobuf-plugin")
-  )
+  ).dependsOn(pluginRuntime)
 
   lazy val pluginRuntime = Project(
     id = "scala-protobuf-plugin-runtime-java",
@@ -45,7 +45,8 @@ object ScalaProtobufBuild extends Build {
       PB.protobufSettings ++ Seq(
       name := "scala-protobuf-plugin-runtime-java",
       libraryDependencies += protobufJava,
-      version in PB.protobufConfig := "2.5.0")
+      version in PB.protobufConfig := "2.5.0",
+      javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
   )
 
 }
