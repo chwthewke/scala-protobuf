@@ -12,11 +12,14 @@ trait PluginOps {
     def toVector = it.asScala.toVector
   }
 
+  // TODO eager conversion ?
+
   implicit class CodeGeneratorRequestOps(val self: CodeGeneratorRequest) {
     def protoFileList = self.getProtoFileList.toVector
   }
 
   implicit class FileDescriptorProtoOps(self: FileDescriptorProto) {
+    def name = self.getName
     def pkg = self.getPackage
     def options = self.getOptions
     def messageTypeList = self.getMessageTypeList.toVector
@@ -55,3 +58,5 @@ trait PluginOps {
   }
 
 }
+
+object PluginOps extends PluginOps

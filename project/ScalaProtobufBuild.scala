@@ -37,6 +37,7 @@ object ScalaProtobufBuild extends Build {
       ScalaProtobufDefaults ++
         PB.protobufSettings ++ Seq(
         name := "scala-protobuf-bootstrap-plugin",
+        mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
         libraryDependencies += protobufJava,
         version in PB.protobufConfig := "2.5.0",
         javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
