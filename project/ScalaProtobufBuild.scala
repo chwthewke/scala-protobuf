@@ -8,7 +8,8 @@ object ScalaProtobufBuild extends Build {
   val ScalaProtobufDefaults = Seq(
     organization := "net.chwthewke",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.10.2")
+    scalaVersion := "2.10.2",
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"))
 
   // required for bootstrapping
   val protobufJava = "com.google.protobuf" % "protobuf-java" % "2.5.0"
