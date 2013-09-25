@@ -8,6 +8,7 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+**/generated-src
 
 # Scala-IDE specific
 .scala_dependencies
@@ -15,4 +16,3 @@ project/plugins/project/
 .project
 .classpath
 .idea_modules/
-scala-protobuf-plugin-runtime-java/generated-src

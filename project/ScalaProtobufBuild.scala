@@ -20,7 +20,7 @@ object ScalaProtobufBuild extends Build {
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults :+
       (name := "scala-protobuf-parent"))
-    .aggregate(scalaProtobufRuntime, scalaProtobufPlugin, pluginRuntime)
+    .aggregate(scalaProtobufRuntime, scalaProtobufBootstrapPlugin)
 
   lazy val scalaProtobufRuntime = Project(
     id = "scala-protobuf",
@@ -30,24 +30,16 @@ object ScalaProtobufBuild extends Build {
       (name := "scala-protobuf")
   )
 
-  lazy val scalaProtobufPlugin = Project(
-    id = "scala-protobuf-plugin",
-    base = file("scala-protobuf-plugin"),
-    settings = Project.defaultSettings ++
-      ScalaProtobufDefaults :+
-      (name := "scala-protobuf-plugin")
-  ).dependsOn(pluginRuntime)
-
-  lazy val pluginRuntime = Project(
-    id = "scala-protobuf-plugin-runtime-java",
-    base = file("scala-protobuf-plugin-runtime-java"),
+  lazy val scalaProtobufBootstrapPlugin = Project(
+    id = "scala-protobuf-bootstrap-plugin",
+    base = file("scala-protobuf-bootstrap-plugin"),
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults ++
-      PB.protobufSettings ++ Seq(
-      name := "scala-protobuf-plugin-runtime-java",
-      libraryDependencies += protobufJava,
-      version in PB.protobufConfig := "2.5.0",
-      javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
+        PB.protobufSettings ++ Seq(
+        name := "scala-protobuf-bootstrap-plugin",
+        libraryDependencies += protobufJava,
+        version in PB.protobufConfig := "2.5.0",
+        javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
   )
 
 }
