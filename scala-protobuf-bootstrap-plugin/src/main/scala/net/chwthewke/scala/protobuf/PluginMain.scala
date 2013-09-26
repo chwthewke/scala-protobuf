@@ -18,8 +18,6 @@ trait PluginRunner {
 
   def plugin : Plugin
 
-  def input = CodedInputStream.newInstance(System.in)
-  def output = CodedOutputStream.newInstance(System.out)
 
 
   def run = Try(process()).recover {
@@ -29,6 +27,6 @@ trait PluginRunner {
   }
 
   def process() : Unit =
-    plugin.process(CodeGeneratorRequest.parseFrom(input)).writeTo(output)
+    plugin.process(CodeGeneratorRequest.parseFrom(System.in)).writeTo(System.out)
 
 }

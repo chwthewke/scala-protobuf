@@ -33,7 +33,7 @@ trait FileProcessor {
 
   def in: FileDescriptorProto
 
-  def targetFile: String = (pkg.split('.') + className).mkString("/")
+  def targetFile: String = (pkg.split('.') :+ s"$className.scala").mkString("/")
 
   def pkg = Option(in.options.javaPackage).getOrElse(in.pkg)
 
