@@ -19,6 +19,8 @@ object ScalaProtobufBuild extends Build {
   // required for bootstrapping
   val protobufJava = "com.google.protobuf" % "protobuf-java" % "2.5.0"
 
+  val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.3"
+
   lazy val scalaProtobufParent = Project(
     id = "scala-protobuf-parent",
     base = file("."),
@@ -36,13 +38,14 @@ object ScalaProtobufBuild extends Build {
   )
 
   lazy val scalaProtobufPlugin = Project(
-    id="scala-protobuf-plugin",
-    base=file("scala-protobuf-plugin"),
+    id = "scala-protobuf-plugin",
+    base = file("scala-protobuf-plugin"),
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults ++
       PB.protobufSettings
   ).settings(
     name := "scala-protobuf-plugin",
+    libraryDependencies += scalaz,
     version in PB.protobufConfig := "2.5.0",
     javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"},
     PB.pluginExecutable in PB.protobufConfig :=
@@ -65,7 +68,7 @@ object ScalaProtobufBuild extends Build {
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
     mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
-    libraryDependencies += protobufJava,
+    libraryDependencies ++= Seq(protobufJava, scalaz),
     version in PB.protobufConfig := "2.5.0",
     PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc",
     javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"}
