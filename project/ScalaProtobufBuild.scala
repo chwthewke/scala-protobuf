@@ -43,4 +43,15 @@ object ScalaProtobufBuild extends Build {
         javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
   )
 
+  lazy val testToPython = Project(
+    id = "scala-protobuf-gen-python",
+    base = file("scala-protobuf-gen-python"),
+    settings = Project.defaultSettings ++
+      PB.protobufSettings ++ Seq(
+        name := "scala-protobuf-gen-python",
+        version in PB.protobufConfig := "2.5.0",
+        PB.plugin := "python"
+    )
+  )
+
 }
