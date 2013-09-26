@@ -40,6 +40,7 @@ object ScalaProtobufBuild extends Build {
         mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
         libraryDependencies += protobufJava,
         version in PB.protobufConfig := "2.5.0",
+        PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc",
         javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
   )
 
