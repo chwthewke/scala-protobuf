@@ -1,32 +1,16 @@
 package net.chwthewke.scala.protobuf
 
-import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorResponse, CodeGeneratorRequest}
-import com.google.protobuf.{CodedOutputStream, CodedInputStream}
-import scala.util.Try
-import scala.util.control.NonFatal
+import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 
-object PluginMain extends PluginRunner {
+object PluginMain extends PluginDriver {
 
-  val plugin : Plugin = new Plugin {}
-
-
-  def main(arg: Array[String]): Unit = run.get
-
-}
-
-trait PluginRunner {
-
-  def plugin : Plugin
-
-
-
-  def run = Try(process()).recover {
-    case NonFatal(e) => CodeGeneratorResponse.newBuilder
-      .setError(e.toString)
-      .build
+  val plugin: Process[CodeGeneratorResponse] = Process {
+    r => (Vector(), new Plugin {}.process(r))
   }
 
-  def process() : Unit =
-    plugin.process(CodeGeneratorRequest.parseFrom(System.in)).writeTo(System.out)
+  override def log(s: String): Unit = { System.err.println(s); super.log(s) }
+
+  def main(arg: Array[String]): Unit = run(plugin)
 
 }
+
