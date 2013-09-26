@@ -1,7 +1,12 @@
+import java.nio.charset.Charset
+import java.nio.file.Files
 import sbt._
 import sbt.Keys._
 
 import sbtprotobuf.{ProtobufPlugin => PB}
+
+import sbtassembly.Plugin._
+import AssemblyKeys._
 
 object ScalaProtobufBuild extends Build {
 
@@ -35,13 +40,16 @@ object ScalaProtobufBuild extends Build {
     base = file("scala-protobuf-bootstrap-plugin"),
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults ++
-        PB.protobufSettings ++ Seq(
-        name := "scala-protobuf-bootstrap-plugin",
-        mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
-        libraryDependencies += protobufJava,
-        version in PB.protobufConfig := "2.5.0",
-        PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc",
-        javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"})
+      PB.protobufSettings ++
+      assemblySettings ++
+      launcherSettings
+  ).settings(
+    name := "scala-protobuf-bootstrap-plugin",
+    mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
+    libraryDependencies += protobufJava,
+    version in PB.protobufConfig := "2.5.0",
+    PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc",
+    javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"}
   )
 
   lazy val testToPython = Project(
@@ -54,5 +62,39 @@ object ScalaProtobufBuild extends Build {
         PB.plugin := "python"
     )
   )
+
+  lazy val launchBatName: SettingKey[File] = settingKey[File]("Location of launcher .bat")
+
+  lazy val launchBat: TaskKey[File] = taskKey[File]("Generate .bat to launch an assembly jar")
+
+  lazy val launcherSettings = Seq(
+    launchBatName in assembly := target.value / "launch.bat",
+    launchBat := launchBat(
+      (launchBatName in assembly).value,
+      (outputPath in assembly).value,
+      javaHome.value,
+      streams.value.log),
+    assembly <<= assembly.dependsOn(launchBat in assembly))
+
+  def launchBat(batFile: File, jarFile: File, javaHome: Option[File], log: Logger) = {
+    import scala.collection.JavaConverters.asJavaIterableConverter
+
+    val relativeJar: String =
+      batFile.toPath.getParent.relativize(jarFile.toPath).toString
+
+    val javaHomeStr = javaHome.map(_.absolutePath + "\\").getOrElse("")
+
+    val lines = Seq(
+      "@echo off",
+      s"rem launches $relativeJar",
+      "cd %~dp0",
+      s"${javaHomeStr}java -jar $relativeJar"
+    )
+
+    Files.write(batFile.toPath, lines.asJava, Charset.forName("UTF-8"))
+
+    batFile
+  }
+
 
 }
