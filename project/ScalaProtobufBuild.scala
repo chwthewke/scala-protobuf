@@ -25,7 +25,7 @@ object ScalaProtobufBuild extends Build {
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults :+
       (name := "scala-protobuf-parent"))
-    .aggregate(scalaProtobufRuntime, scalaProtobufBootstrapPlugin)
+    .aggregate(scalaProtobufRuntime, scalaProtobufBootstrapPlugin, scalaProtobufPlugin)
 
   lazy val scalaProtobufRuntime = Project(
     id = "scala-protobuf",
@@ -33,6 +33,25 @@ object ScalaProtobufBuild extends Build {
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults :+
       (name := "scala-protobuf")
+  )
+
+  lazy val scalaProtobufPlugin = Project(
+    id="scala-protobuf-plugin",
+    base=file("scala-protobuf-plugin"),
+    settings = Project.defaultSettings ++
+      ScalaProtobufDefaults ++
+      PB.protobufSettings
+  ).settings(
+    name := "scala-protobuf-plugin",
+    version in PB.protobufConfig := "2.5.0",
+    javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"},
+    PB.pluginExecutable in PB.protobufConfig :=
+      Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value),
+    PB.plugin in PB.protobufConfig := "scala",
+    PB.generate in PB.protobufConfig <<=
+      (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
+  ).dependsOn(
+    scalaProtobufRuntime
   )
 
   lazy val scalaProtobufBootstrapPlugin = Project(
@@ -50,17 +69,6 @@ object ScalaProtobufBuild extends Build {
     version in PB.protobufConfig := "2.5.0",
     PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc",
     javaSource in PB.protobufConfig <<= baseDirectory {_ / "generated-src" / "protobuf"}
-  )
-
-  lazy val testToPython = Project(
-    id = "scala-protobuf-gen-python",
-    base = file("scala-protobuf-gen-python"),
-    settings = Project.defaultSettings ++
-      PB.protobufSettings ++ Seq(
-        name := "scala-protobuf-gen-python",
-        version in PB.protobufConfig := "2.5.0",
-        PB.plugin := "python"
-    )
   )
 
   lazy val launchBatName: SettingKey[File] = settingKey[File]("Location of launcher .bat")
