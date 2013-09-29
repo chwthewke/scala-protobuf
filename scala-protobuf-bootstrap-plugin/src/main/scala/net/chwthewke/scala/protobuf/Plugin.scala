@@ -14,7 +14,7 @@ trait Plugin {
   def process: Process[CodeGeneratorResponse] = {
 
     for {
-      req <- Process.ask
+      req <- Process.ask :+> "Scala-Protobuf plugin started"
       files <- req.protoFileList.map(FileDescriptorProcess(_)).sequence
     } yield CodeGeneratorResponse.newBuilder
       .addAllFile(files.asJava)

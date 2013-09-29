@@ -38,6 +38,12 @@ package object protobuf {
     scalaz.syntax.monadListen.ToMonadListenOps[ProcessW, X, Vector[String]](p)
   }
 
+  implicit class ProcessTell1Ops[X](val p:Process[X]) {
+    final def :+>(w: => String): Process[X] = p :++> Vector(w)
+
+    final def :+>>(f: X => String): Process[X] = p :++>> (x => Vector(f(x)))
+  }
+
 
 
 }
