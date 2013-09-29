@@ -1,13 +1,12 @@
 package net.chwthewke.scala.protobuf
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
-import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
 
 import PluginOps._
+import net.chwthewke.scala.protobuf.symbols.SymbolTableProcess
 
 trait Plugin {
 
@@ -15,6 +14,7 @@ trait Plugin {
 
     for {
       req <- Process.ask :+> "Scala-Protobuf plugin started"
+      symbolTable <- SymbolTableProcess()
       files <- req.protoFileList.map(FileDescriptorProcess(_)).sequence
     } yield CodeGeneratorResponse.newBuilder
       .addAllFile(files.asJava)
