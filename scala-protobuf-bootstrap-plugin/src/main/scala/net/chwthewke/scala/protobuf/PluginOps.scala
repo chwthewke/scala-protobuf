@@ -24,11 +24,14 @@ trait PluginOps {
     def options = self.getOptions
     def messageTypeList = self.getMessageTypeList.toVector
     def dependencyList = self.getDependencyList.toVector
+
+    def javaPackage = options.javaPackage.getOrElse(pkg)
+    def javaOuterClassName = options.javaOuterClassName.getOrElse(name.stripSuffix(".proto").capitalize)
   }
 
   implicit class FileOptionsOps(self: FileOptions) {
-    def javaPackage = self.getJavaPackage
-    def javaOuterClassName = self.getJavaOuterClassname
+    def javaPackage = Option(self.getJavaPackage)
+    def javaOuterClassName = Option(self.getJavaOuterClassname)
   }
 
   implicit class DescriptorProtoOps(self: DescriptorProto) {
@@ -53,10 +56,9 @@ trait PluginOps {
     def label = self.getLabel
     def number = self.getNumber
     def typ = self.getType
-    def typeName = self.getTypeName
-    def defaultValue = self.getDefaultValue
+    def typeName = Option(self.getTypeName)
+    def defaultValue = Option(self.getDefaultValue)
   }
-
 }
 
 object PluginOps extends PluginOps

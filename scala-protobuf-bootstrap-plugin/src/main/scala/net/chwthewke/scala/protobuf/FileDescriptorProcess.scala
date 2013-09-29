@@ -15,9 +15,9 @@ trait FileDescriptorProcess {
 
   def targetFile: String = (pkg.split('.') :+ s"$className.scala").mkString("/")
 
-  def pkg = Option(file.options.javaPackage).getOrElse(file.pkg)
+  def pkg = file.javaPackage
 
-  def className = Option(file.options.javaOuterClassName).getOrElse(file.name.capitalize)
+  def className = file.javaOuterClassName
 
   def fileDef: PackageDef = {
     val classSymbol = RootClass.newModuleClass(className)
