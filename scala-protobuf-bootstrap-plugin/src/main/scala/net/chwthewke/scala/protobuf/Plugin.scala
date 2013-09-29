@@ -4,39 +4,24 @@ import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import scala.collection.JavaConverters.seqAsJavaListConverter
-
+import scalaz.std.vector._
+import scalaz.syntax.traverse._
 
 import PluginOps._
 
 trait Plugin {
 
-  def process(request: CodeGeneratorRequest): CodeGeneratorResponse = {
+  def process: Process[CodeGeneratorResponse] = {
 
-    val codeFiles = request.protoFileList.map {
-      f =>
-        val fp = new FileProcessor {def in: FileDescriptorProto = f}
-        CodeGeneratorResponse.File.newBuilder
-          .setName(fp.targetFile)
-          .setContent("")
-          .build
-    }
-
-    CodeGeneratorResponse.newBuilder
-      .addAllFile(codeFiles.asJava)
+    for {
+      req <- Process.ask
+      files <- req.protoFileList.map(FileDescriptorProcess(_)).sequence
+    } yield CodeGeneratorResponse.newBuilder
+      .addAllFile(files.asJava)
       .build
+
   }
 
 }
 
-trait FileProcessor {
-
-
-  def in: FileDescriptorProto
-
-  def targetFile: String = (pkg.split('.') :+ s"$className.scala").mkString("/")
-
-  def pkg = Option(in.options.javaPackage).getOrElse(in.pkg)
-
-  def className = Option(in.options.javaOuterClassName).getOrElse(in.name.capitalize)
-
-}
+object Plugin extends Plugin
