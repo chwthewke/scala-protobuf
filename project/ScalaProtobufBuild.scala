@@ -3,6 +3,7 @@ import java.nio.file.Files
 import sbt._
 import sbt.Keys._
 
+import sbtprotobuf.ProtobufPlugin.ProtocPlugin
 import sbtprotobuf.{ProtobufPlugin => PB}
 import sbtbuildinfo.Plugin._
 import sbtassembly.Plugin._
@@ -58,9 +59,9 @@ object ScalaProtobufBuild extends Build {
     name := "scala-protobuf-plugin",
     libraryDependencies += scalaz,
     version in PB.protobufConfig := "2.5.0",
-    PB.pluginExecutable in PB.protobufConfig :=
-      Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value),
-    PB.plugin in PB.protobufConfig := "scala",
+    PB.plugins in PB.protobufConfig := Seq(
+      ProtocPlugin("scala", (javaSource in PB.protobufConfig).value,
+        Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value))),
     PB.generate in PB.protobufConfig <<=
       (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
   ).dependsOn(
