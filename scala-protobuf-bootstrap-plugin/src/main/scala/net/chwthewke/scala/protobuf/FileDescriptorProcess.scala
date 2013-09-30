@@ -12,6 +12,7 @@ import scalaz.syntax.traverse._
 trait FileDescriptorProcess {
 
   import PluginOps._
+  import MessageContainer._
   import treehugger.forest._
   import treehugger.forest.definitions._
   import treehuggerDSL._
@@ -26,18 +27,12 @@ trait FileDescriptorProcess {
 
   def fileDef: Process[PackageDef] = {
     for {
-      messageDefs <- processMessages
+      messageDefs <- MessageContainerProcess(file, symbolTable)
     } yield BLOCK(
       OBJECTDEF(moduleSymbols.obj) := BLOCK(
         messageDefs
       )
     ) inPackage (moduleSymbols.pkg)
-  }
-
-  private def processMessages: Process[Vector[Tree]] = {
-    for {
-      byMessage <- file.messageTypeList.map(DescriptorProcess(symbolTable, file, _)).sequence
-    } yield byMessage.flatten
   }
 
   def responseFile: Process[CodeGeneratorResponse.File] = for {
