@@ -23,6 +23,7 @@ trait PluginOps {
     def pkg = self.getPackage
     def options = self.getOptions
     def messageTypeList = self.getMessageTypeList.toVector
+    def enumTypeList = self.getEnumTypeList.toVector
     def dependencyList = self.getDependencyList.toVector
 
     def javaPackage = options.javaPackage.getOrElse(pkg)
@@ -46,7 +47,7 @@ trait PluginOps {
     def valueList = self.getValueList.toVector
   }
 
-  implicit class EnumValueDescriptorProtoOps(self : EnumValueDescriptorProto) {
+  implicit class EnumValueDescriptorProtoOps(self: EnumValueDescriptorProto) {
     def name = self.getName
     def number = self.getNumber
   }

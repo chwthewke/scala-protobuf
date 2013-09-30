@@ -2,11 +2,13 @@ package net.chwthewke.scala
 
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import scala.language.implicitConversions
-import scalaz.{ReaderWriterState, RWST, Id}
+import scalaz.{ ReaderWriterState, RWST, Id }
 import scalaz.std.vector._
-import scalaz.syntax.{MonadListenOps, MonadTellOps}
+import scalaz.syntax.{ MonadListenOps, MonadTellOps }
 
 package object protobuf {
+
+  // TODO rework syntaxes (MessageContainer, PluginOps, this) to a single object 
 
   type Process[X] = ReaderWriterState[CodeGeneratorRequest, Vector[String], Unit, X]
 
@@ -19,16 +21,16 @@ package object protobuf {
     def apply[X](x: X): Process[X] = rwstM.point(x)
 
     def apply[X](f: CodeGeneratorRequest => (Vector[String], X)): Process[X] = ReaderWriterState {
-      (r, _) => {
-        f(r) match {
-          case (w, x) => (w, x, ())
+      (r, _) =>
+        {
+          f(r) match {
+            case (w, x) => (w, x, ())
+          }
         }
-      }
     }
 
     def ask: Process[CodeGeneratorRequest] = rwstM.ask
   }
-
 
   implicit def ToProcessTellOps[X](p: Process[X]): MonadTellOps[ProcessW, Vector[String], X] = {
     scalaz.syntax.monadTell.ToMonadTellOps[ProcessW, X, Vector[String]](p)
@@ -38,12 +40,10 @@ package object protobuf {
     scalaz.syntax.monadListen.ToMonadListenOps[ProcessW, X, Vector[String]](p)
   }
 
-  implicit class ProcessTell1Ops[X](val p:Process[X]) {
+  implicit class ProcessTell1Ops[X](val p: Process[X]) {
     final def :+>(w: => String): Process[X] = p :++> Vector(w)
 
     final def :+>>(f: X => String): Process[X] = p :++>> (x => Vector(f(x)))
   }
-
-
 
 }
