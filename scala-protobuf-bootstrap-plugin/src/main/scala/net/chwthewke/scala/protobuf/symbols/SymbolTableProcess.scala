@@ -20,11 +20,10 @@ trait SymbolTableProcess {
   } yield fileSymbolTables.reduce(_ ++ _)
 
   def processFile(file: FileDescriptorProto): Process[SymbolTable] = {
-    val pkg = (RootClass /: file.javaPackage.split('.'))(_.newModuleClass(_))
     for {
-      outerClassSymbol <- Process(pkg.newModuleClass(file.javaOuterClassName)) :+>> (s => s"ST: ${file.name} -> $s")
-      messages <- processNestedMessages(file, outerClassSymbol)
-    } yield SymbolTable(Map(file -> outerClassSymbol), messages.toMap)
+      fileSymbols <- fileSymbols(file) :+>> (s => s"ST: ${file.name} -> $s")
+      messages <- processNestedMessages(file, fileSymbols.obj)
+    } yield SymbolTable(Map(file -> fileSymbols), messages.toMap)
   }
 
   def processMessage(parent: ModuleClassSymbol, message: DescriptorProto): Process[Vector[DescriptorSymbols]] = {
@@ -36,6 +35,11 @@ trait SymbolTableProcess {
 
   private def messageSymbols(parent: ModuleClassSymbol, message: DescriptorProto) = Process {
     MessageSymbols(parent.newClass(message.name), parent.newModuleClass(message.name))
+  }
+
+  private def fileSymbols(file: FileDescriptorProto) = Process {
+    val pkg = RootClass.newModuleClass(file.javaPackage)
+    FileSymbols(pkg.newModuleClass(file.javaOuterClassName), pkg)
   }
 
   private def processNestedMessages[A](messageContainer: A,

@@ -15,7 +15,7 @@ trait Plugin {
     for {
       req <- Process.ask :+> "Scala-Protobuf plugin started"
       symbolTable <- SymbolTableProcess()
-      files <- req.protoFileList.map(FileDescriptorProcess(_)).sequence
+      files <- req.protoFileList.map(FileDescriptorProcess(symbolTable, _)).sequence
     } yield CodeGeneratorResponse.newBuilder
       .addAllFile(files.asJava)
       .build

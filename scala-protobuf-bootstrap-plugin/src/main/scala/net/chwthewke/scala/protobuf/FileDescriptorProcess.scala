@@ -3,6 +3,9 @@ package net.chwthewke.scala.protobuf
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File
+import net.chwthewke.scala.protobuf.symbols.SymbolTable
+import net.chwthewke.scala.protobuf.symbols.FileSymbols
+import net.chwthewke.scala.protobuf.symbols.SymbolTable
 
 trait FileDescriptorProcess {
 
@@ -13,18 +16,22 @@ trait FileDescriptorProcess {
 
   def file: FileDescriptorProto
 
-  def targetFile: String = (pkg.split('.') :+ s"$className.scala").mkString("/")
+  def symbolTable: SymbolTable
 
-  def pkg = file.javaPackage
+  def moduleName = moduleSymbols.obj.nameString
 
-  def className = file.javaOuterClassName
+  def targetFile: String = (file.javaPackage.split('.') :+ s"$moduleName.scala").mkString("/")
 
   def fileDef: PackageDef = {
-    val classSymbol = RootClass.newModuleClass(className)
 
     BLOCK(
-      OBJECTDEF(classSymbol)
-    ) inPackage (pkg)
+      OBJECTDEF(moduleSymbols.obj) := BLOCK(
+        file.messageTypeList.flatMap { m =>
+          val sym = symbolTable.messages(m)
+          Vector[Tree](OBJECTDEF(sym.obj), CASECLASSDEF(sym.cls) withParams ())
+        }
+      )
+    ) inPackage (moduleSymbols.pkg)
   }
 
   def responseFile: Process[CodeGeneratorResponse.File] = Process {
@@ -34,10 +41,17 @@ trait FileDescriptorProcess {
       .build
   }
 
+  private def moduleSymbols: FileSymbols = {
+    symbolTable.files(file)
+  }
+
 }
 
 object FileDescriptorProcess {
-  def apply(file_ : FileDescriptorProto): Process[CodeGeneratorResponse.File] =
-    new FileDescriptorProcess { override val file = file_ }.responseFile
+  def apply(symbolTable_ : SymbolTable, file_ : FileDescriptorProto): Process[CodeGeneratorResponse.File] =
+    new FileDescriptorProcess {
+      override val file = file_
+      override val symbolTable = symbolTable_
+    }.responseFile
 }
 
