@@ -6,6 +6,8 @@ import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File
 import net.chwthewke.scala.protobuf.symbols.SymbolTable
 import net.chwthewke.scala.protobuf.symbols.FileSymbols
 import net.chwthewke.scala.protobuf.symbols.SymbolTable
+import scalaz.std.vector._
+import scalaz.syntax.traverse._
 
 trait FileDescriptorProcess {
 
@@ -22,24 +24,28 @@ trait FileDescriptorProcess {
 
   def targetFile: String = (file.javaPackage.split('.') :+ s"$moduleName.scala").mkString("/")
 
-  def fileDef: PackageDef = {
-
-    BLOCK(
+  def fileDef: Process[PackageDef] = {
+    for {
+      messageDefs <- processMessages
+    } yield BLOCK(
       OBJECTDEF(moduleSymbols.obj) := BLOCK(
-        file.messageTypeList.flatMap { m =>
-          val sym = symbolTable.messages(m)
-          Vector[Tree](OBJECTDEF(sym.obj), CASECLASSDEF(sym.cls) withParams ())
-        }
+        messageDefs
       )
     ) inPackage (moduleSymbols.pkg)
   }
 
-  def responseFile: Process[CodeGeneratorResponse.File] = Process {
-    File.newBuilder
-      .setName(targetFile)
-      .setContent(treeToString(fileDef))
-      .build
+  private def processMessages: Process[Vector[Tree]] = {
+    for {
+      byMessage <- file.messageTypeList.map(DescriptorProcess(symbolTable, file, _)).sequence
+    } yield byMessage.flatten
   }
+
+  def responseFile: Process[CodeGeneratorResponse.File] = for {
+    fileDef <- this.fileDef
+  } yield File.newBuilder
+    .setName(targetFile)
+    .setContent(treeToString(fileDef))
+    .build
 
   private def moduleSymbols: FileSymbols = {
     symbolTable.files(file)
