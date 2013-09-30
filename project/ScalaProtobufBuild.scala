@@ -60,8 +60,9 @@ object ScalaProtobufBuild extends Build {
     libraryDependencies += scalaz,
     version in PB.protobufConfig := "2.5.0",
     PB.plugins in PB.protobufConfig := Seq(
-      ProtocPlugin("scala", (javaSource in PB.protobufConfig).value,
-        Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value))),
+      ProtocPlugin("scala", (sourceManaged in Compile).value / "compiled_protobuf",
+        Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value),
+        _ ** "*.scala")),
     PB.generate in PB.protobufConfig <<=
       (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
   ).dependsOn(
