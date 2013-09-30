@@ -23,7 +23,8 @@ trait SymbolTableProcess {
     for {
       fileSymbols <- fileSymbols(file) :+>> (s => s"ST: ${file.name} -> $s")
       messages <- processNestedMessages(file, fileSymbols.obj)
-    } yield SymbolTable(Map(file -> fileSymbols), messages.toMap)
+      descriptorPaths <- DescriptorPathsProcess()
+    } yield SymbolTable(Map(file -> fileSymbols), messages.toMap, descriptorPaths)
   }
 
   def processMessage(parent: ModuleClassSymbol, message: DescriptorProto): Process[Vector[DescriptorSymbols]] = {
