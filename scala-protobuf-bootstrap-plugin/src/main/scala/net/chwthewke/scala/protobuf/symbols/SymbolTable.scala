@@ -8,12 +8,14 @@ import treehugger.forest._
 case class SymbolTable(files: Map[FileDescriptorProto, FileSymbols],
   messages: Map[DescriptorProto, MessageSymbols],
   enums: Map[EnumDescriptorProto, EnumSymbols],
-  descriptors: Map[DescriptorPath, DescriptorProto]) {
+  descriptors: Map[DescriptorPath, DescriptorProto],
+  enumDescriptors: Map[DescriptorPath, EnumDescriptorProto]) {
   def ++(other: SymbolTable) = SymbolTable(
     files ++ other.files,
     messages ++ other.messages,
     enums ++ other.enums,
-    descriptors ++ other.descriptors)
+    descriptors ++ other.descriptors,
+    enumDescriptors ++ other.enumDescriptors)
 }
 
 case class MessageSymbols(cls: ClassSymbol, obj: ModuleClassSymbol)
