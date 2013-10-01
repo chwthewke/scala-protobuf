@@ -4,7 +4,6 @@ import com.google.protobuf.DescriptorProtos.{ DescriptorProto, EnumDescriptorPro
 import net.chwthewke.scala.protobuf.PluginOps
 import treehugger.forest._
 
-// TODO enums
 case class SymbolTable(files: Map[FileDescriptorProto, FileSymbols],
   messages: SymbolPaths[DescriptorProto, MessageSymbols],
   enums: SymbolPaths[EnumDescriptorProto, EnumSymbols]) {
