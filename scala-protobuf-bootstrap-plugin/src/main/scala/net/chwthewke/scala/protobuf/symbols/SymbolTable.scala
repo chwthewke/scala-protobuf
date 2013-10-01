@@ -35,6 +35,11 @@ case class DescriptorPath(source: FileDescriptorProto, names: Vector[String]) {
 case class SymbolPaths[P, S](symbols: Map[P, S], paths: Map[P, DescriptorPath]) {
   val protos: Map[DescriptorPath, P] = paths.map(_.swap)
 
+  val protosByName: Map[String, (FileDescriptorProto, P)] =
+    for {
+      (DescriptorPath(source, names), p) <- protos
+    } yield names.mkString(".") -> (source, p)
+
   def ++(other: SymbolPaths[P, S]) = SymbolPaths(symbols ++ other.symbols, paths ++ other.paths)
 }
 
