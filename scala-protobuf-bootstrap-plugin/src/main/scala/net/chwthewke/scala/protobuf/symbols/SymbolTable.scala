@@ -6,16 +6,12 @@ import treehugger.forest._
 
 // TODO enums
 case class SymbolTable(files: Map[FileDescriptorProto, FileSymbols],
-  messages: Map[DescriptorProto, MessageSymbols],
-  enums: Map[EnumDescriptorProto, EnumSymbols],
-  descriptors: Map[DescriptorPath, DescriptorProto],
-  enumDescriptors: Map[DescriptorPath, EnumDescriptorProto]) {
+  messages: SymbolPaths[DescriptorProto, MessageSymbols],
+  enums: SymbolPaths[EnumDescriptorProto, EnumSymbols]) {
   def ++(other: SymbolTable) = SymbolTable(
     files ++ other.files,
     messages ++ other.messages,
-    enums ++ other.enums,
-    descriptors ++ other.descriptors,
-    enumDescriptors ++ other.enumDescriptors)
+    enums ++ other.enums)
 }
 
 case class MessageSymbols(cls: ClassSymbol, obj: ModuleClassSymbol)
@@ -33,6 +29,13 @@ case class DescriptorPath(source: FileDescriptorProto, names: Vector[String]) {
   def +(name: String) = DescriptorPath(source, names :+ name)
 
   def mkString: String = s"${names.mkString(".")} in ${source.name}"
+}
+
+// TODO the "paths" part may be useless, check
+case class SymbolPaths[P, S](symbols: Map[P, S], paths: Map[P, DescriptorPath]) {
+  val protos: Map[DescriptorPath, P] = paths.map(_.swap)
+
+  def ++(other: SymbolPaths[P, S]) = SymbolPaths(symbols ++ other.symbols, paths ++ other.paths)
 }
 
 object DescriptorPath {

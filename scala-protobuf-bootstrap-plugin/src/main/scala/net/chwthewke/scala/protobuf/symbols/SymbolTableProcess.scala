@@ -23,7 +23,9 @@ trait SymbolTableProcess {
       (messages, enums) = nested
       descriptorPaths <- DescriptorPathsProcess()
       (messagePaths, enumPaths) = descriptorPaths
-    } yield SymbolTable(Map(file -> fileSymbols), messages.toMap, enums.toMap, messagePaths, enumPaths)
+    } yield SymbolTable(Map(file -> fileSymbols),
+      SymbolPaths(messages.toMap, messagePaths.map(_.swap)),
+      SymbolPaths(enums.toMap, enumPaths.map(_.swap)))
   }
 
   private def fileSymbols(file: FileDescriptorProto) = Process {
