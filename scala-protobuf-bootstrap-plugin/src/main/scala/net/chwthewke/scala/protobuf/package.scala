@@ -11,4 +11,5 @@ package object protobuf {
 
   object syntax extends ProcessSyntax with MessageContainerSyntax with PluginOps
 
+  val Process = syntax.Process
 }

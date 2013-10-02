@@ -7,18 +7,21 @@ import scalaz.std.vector._
 import scalaz.syntax.{ MonadListenOps, MonadTellOps }
 
 trait ProcessSyntax {
-  def apply[X](x: X): Process[X] = rwstM.point(x)
 
-  def apply[X](f: CodeGeneratorRequest => (Vector[String], X)): Process[X] = ReaderWriterState {
-    (r, _) =>
-      {
-        f(r) match {
-          case (w, x) => (w, x, ())
+  object Process {
+    def ask: Process[CodeGeneratorRequest] = rwstM.ask
+
+    def apply[X](x: X): Process[X] = rwstM.point(x)
+
+    def apply[X](f: CodeGeneratorRequest => (Vector[String], X)): Process[X] = ReaderWriterState {
+      (r, _) =>
+        {
+          f(r) match {
+            case (w, x) => (w, x, ())
+          }
         }
-      }
+    }
   }
-
-  def ask: Process[CodeGeneratorRequest] = rwstM.ask
 
   implicit def ToProcessTellOps[X](p: Process[X]): MonadTellOps[ProcessW, Vector[String], X] = {
     scalaz.syntax.monadTell.ToMonadTellOps[ProcessW, X, Vector[String]](p)
@@ -38,5 +41,5 @@ trait ProcessSyntax {
     RWST.rwstMonad[Id.Id, CodeGeneratorRequest, Vector[String], Unit]
 }
 
-object Process extends ProcessSyntax
+object ProcessSyntax extends ProcessSyntax
 
