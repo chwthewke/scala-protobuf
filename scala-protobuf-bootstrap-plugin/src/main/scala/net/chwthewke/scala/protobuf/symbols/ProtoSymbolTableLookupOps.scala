@@ -22,6 +22,11 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
       case es @ EnumSymbol(_, _, _, e, _, _) if descriptor == e => es
     }
 
+  def field(descriptor: FieldDescriptorProto): Option[FieldSymbol] =
+    self.symbols.collectFirst {
+      case fs @ FieldSymbol(_, _, _, f, _) if descriptor == f => fs
+    }
+
   def findByName(typename: String, referrerFqn: String, referrerSource: FileDescriptorProto): Option[ProtoSymbol] = {
 
     val reachableFiles = self.symbols.collect {
@@ -30,12 +35,13 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
 
     (none[ProtoSymbol] /: fqns(typename, referrerFqn)) {
       case (Some(s), _) => Some(s)
-      case (_, fqn) => findByFqn(fqn, reachableFiles)
+      case (_, fqn) => findByFqn(fqn, referrerSource +: reachableFiles)
     }
   }
 
-  private def findByFqn(fqn: String, reachableFiles: Seq[FileDescriptorProto]): Option[ProtoSymbol] =
-    self.symbols.collectFirst { case ps: ProtoSymbol if ps.fqn == fqn && reachableFiles.contains(ps.source) => ps }
+  private def findByFqn(fqn: String, reachableFiles: Seq[FileDescriptorProto]): Option[ProtoSymbol] = {
+    self.symbols.collectFirst { case ps: ProtoSymbol if ps.fqn == fqn && reachableFiles.contains(ps.file) => ps }
+  }
 
   private def fqns(typename: String, referrerFqn: String): Vector[String] =
     if (typename(0) == '.') Vector(typename.drop(1))

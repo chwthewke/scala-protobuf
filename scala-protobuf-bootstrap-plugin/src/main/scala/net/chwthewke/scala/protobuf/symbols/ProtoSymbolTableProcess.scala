@@ -24,12 +24,12 @@ trait ProtoSymbolTableProcess {
     val pkg = RootClass.newModuleClass(descriptor.javaPackage)
     val obj = pkg.newModuleClass(descriptor.javaOuterClassName)
 
-    val ctx = Ctx(descriptor, Vector(), obj, descriptor.javaPackage)
+    val ctx = Ctx(descriptor, Vector(), obj, descriptor.pkg)
 
     FileSymbol(
       descriptor,
       None,
-      descriptor.javaPackage,
+      descriptor.pkg,
       descriptor,
       obj,
       pkg) +:
@@ -95,7 +95,12 @@ trait ProtoSymbolTableProcess {
     val name = Names.field(field.name)
     val sym = ctx.cont.newValue(name)
 
-    FieldSymbol(ctx.src, ctx.location, s"${ctx.pfqn}.${field.name}", field, sym)
+    FieldSymbol(
+      ctx.src,
+      ctx.location,
+      s"${ctx.pfqn}.${field.name}",
+      field,
+      sym)
   }
 
   private case class Ctx(src: FileDescriptorProto, path: Vector[Int], cont: ClassSymbol, pfqn: String) {

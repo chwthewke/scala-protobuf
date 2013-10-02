@@ -25,11 +25,18 @@ trait DescriptorProcess {
     for {
       nested <- MessageContainerProcess(self, symbolTable)
       enums <- self.enumTypeList.map(EnumDescriptorProcess(_, symbolTable)).sequence
+      fields <- self.fieldList.map(FieldDescriptorProcess(_, symbolTable)).sequence
     } yield Vector[Tree](
-      CASECLASSDEF(symbol.cls),
-      OBJECTDEF(symbol.obj) := BLOCK(nested ++ enums.flatten)
+      CASECLASSDEF(symbol.cls) withParams (fields),
+      objectDef(nested ++ enums.flatten)
     )
 
+  }
+
+  private def objectDef(content: Vector[Tree]): Tree = {
+    val od = OBJECTDEF(symbol.obj)
+    if (content.isEmpty) od
+    else od := BLOCK(content)
   }
 }
 

@@ -1,22 +1,32 @@
 package net.chwthewke.scala.protobuf.gen
 
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto
+import com.google.protobuf.DescriptorProtos._
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type._
 import treehugger.forest._
 import treehugger.forest.definitions._
+import treehugger.forest.treehuggerDSL._
 import net.chwthewke.scala.protobuf.Process
 import net.chwthewke.scala.protobuf.syntax._
-import net.chwthewke.scala.protobuf.symbols.ByteStringClass
-import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.symbols.{ MessageSymbol, EnumSymbol, ByteStringClass, ProtoSymbolTable }
+import net.chwthewke.scala.protobuf.symbols.FieldSymbol
 
 trait FieldDescriptorProcess {
 
   def self: FieldDescriptorProto
 
+  lazy val symbol: FieldSymbol = symbolTable.field(self).get
+
+  def file: FileDescriptorProto = symbol.file
+  def fqn: String = symbol.fqn
+
   def symbolTable: ProtoSymbolTable
 
-  def apply: Process[Tree]
+  def apply: Process[ValDef] = Process {
+    val typ = typeSymbol.lift(self.typ -> self.typeName).get
+
+    VAL(symbol.defn, typ)
+  }
 
   private def typeSymbol: PartialFunction[(Type, Option[String]), Symbol] = {
     case (TYPE_BOOL, _) => BooleanClass
@@ -30,13 +40,25 @@ trait FieldDescriptorProcess {
       (TYPE_SFIXED64, _) | (TYPE_SINT64, _) |
       (TYPE_UINT64, _) => LongClass
     case (TYPE_FLOAT, _) => FloatClass
-    case (TYPE_GROUP, _) | (TYPE_MESSAGE, _) =>
-      self.typeName match { case Some(typeName) => message(typeName) }
+    case (TYPE_GROUP, Some(typeName)) => message(typeName)
+    case (TYPE_MESSAGE, Some(typeName)) => message(typeName)
     case (TYPE_STRING, _) => StringClass
   }
 
-  def enum(typeName: String): Symbol
+  def enum(typeName: String): Symbol = symbolTable.findByName(typeName, fqn, file).collect {
+    case EnumSymbol(_, _, _, _, cls, _) => cls
+  }.get
 
-  def message(typeName: String): Symbol
+  def message(typeName: String): Symbol = symbolTable.findByName(typeName, fqn, file).collect {
+    case MessageSymbol(_, _, _, _, cls, _) => cls
+  }.get
 
+}
+
+object FieldDescriptorProcess {
+  def apply(field: FieldDescriptorProto, sym: ProtoSymbolTable): Process[ValDef] =
+    new FieldDescriptorProcess {
+      def self = field
+      def symbolTable = sym
+    }.apply
 }
