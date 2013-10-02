@@ -9,7 +9,7 @@ import sbtbuildinfo.Plugin._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
-
+// TODO : some mighty factoring
 object ScalaProtobufBuild extends Build {
 
   val ScalaProtobufDefaults = Seq(
@@ -17,9 +17,6 @@ object ScalaProtobufBuild extends Build {
     version := "0.1-SNAPSHOT",
     scalaVersion := "2.10.2",
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"))
-
-  // required for bootstrapping
-  val protobufJava = "com.google.protobuf" % "protobuf-java" % "2.5.0"
 
   val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.3"
 
@@ -57,7 +54,7 @@ object ScalaProtobufBuild extends Build {
       myBuildInfoSettings
   ).settings(
     name := "scala-protobuf-plugin",
-    libraryDependencies += scalaz,
+    libraryDependencies ++= Seq(scalaz, treehugger),
     version in PB.protobufConfig := "2.5.0",
     PB.plugins in PB.protobufConfig := Seq(
       ProtocPlugin("scala", (sourceManaged in Compile).value / "compiled_protobuf",
@@ -81,9 +78,11 @@ object ScalaProtobufBuild extends Build {
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
     mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
-    libraryDependencies ++= Seq(protobufJava, scalaz, treehugger),
+    libraryDependencies ++= Seq(scalaz, treehugger),
     version in PB.protobufConfig := "2.5.0",
     PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc"
+  ).dependsOn(
+    scalaProtobufRuntime
   )
 
   lazy val launchBatName: SettingKey[File] = settingKey[File]("Location of launcher .bat")
