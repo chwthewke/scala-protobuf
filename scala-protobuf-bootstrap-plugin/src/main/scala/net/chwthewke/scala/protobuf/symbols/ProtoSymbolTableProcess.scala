@@ -38,31 +38,35 @@ trait ProtoSymbolTableProcess {
 
   def messageSymbol(ctx: Ctx, descriptor: DescriptorProto): Vector[ProtoSymbol] = {
 
-    val obj = ctx.cont.newModuleClass(descriptor.name)
-    val fqn = ctx.pfqn + s".${descriptor.name}"
+    val name = Names.message(descriptor.name)
+    val obj = ctx.cont.newModuleClass(name)
+    val cls = ctx.cont.newClass(name)
+    val fqn = s"${ctx.pfqn}.${descriptor.name}"
 
     MessageSymbol(
       ctx.src,
       ctx.location,
       fqn,
       descriptor,
-      ctx.cont.newClass(descriptor.name),
+      cls,
       obj) +:
-      contentSymbols(ctx.copy(cont = obj, pfqn = fqn), descriptor)
+      (contentSymbols(ctx.copy(cont = obj, pfqn = fqn), descriptor) ++
+        fieldSymbols(ctx.copy(cont = cls, pfqn = fqn), descriptor))
   }
 
   def enumSymbol(ctx: Ctx, descriptor: EnumDescriptorProto): EnumSymbol = {
 
+    val name = Names.message(descriptor.name)
     val values = descriptor.valueList.map { v =>
-      v -> ctx.cont.newModuleClass(v.name)
+      v -> ctx.cont.newModuleClass(Names.enumValue(v.name))
     }
 
     EnumSymbol(
       ctx.src,
       ctx.location,
-      ctx.pfqn + s".${descriptor.name}",
+      s"${ctx.pfqn}.${descriptor.name}",
       descriptor,
-      ctx.cont.newClass(descriptor.name),
+      ctx.cont.newClass(name),
       values.toMap)
   }
 
@@ -80,7 +84,21 @@ trait ProtoSymbolTableProcess {
     messageSymbols ++ enumSymbols
   }
 
-  private case class Ctx(src: FileDescriptorProto, path: Vector[Int], cont: ModuleClassSymbol, pfqn: String) {
+  def fieldSymbols(ctx: Ctx, message: DescriptorProto): Vector[FieldSymbol] = {
+    message.fieldList.zipWithIndex.map {
+      case (f, i) =>
+        fieldSymbol(ctx.copy(path = ctx.path :+ DescriptorProto.FIELD_FIELD_NUMBER :+ i), f)
+    }
+  }
+
+  def fieldSymbol(ctx: Ctx, field: FieldDescriptorProto): FieldSymbol = {
+    val name = Names.field(field.name)
+    val sym = ctx.cont.newValue(name)
+
+    FieldSymbol(ctx.src, ctx.location, s"${ctx.pfqn}.${field.name}", field, sym)
+  }
+
+  private case class Ctx(src: FileDescriptorProto, path: Vector[Int], cont: ClassSymbol, pfqn: String) {
     def location = for {
       info <- src.sourceCodeInfo
       location <- info.findLocation(path)

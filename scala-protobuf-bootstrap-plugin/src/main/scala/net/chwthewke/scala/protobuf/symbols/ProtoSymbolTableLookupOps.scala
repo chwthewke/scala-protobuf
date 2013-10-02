@@ -34,10 +34,10 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
     }
   }
 
-  def findByFqn(fqn: String, reachableFiles: Seq[FileDescriptorProto]): Option[ProtoSymbol] =
+  private def findByFqn(fqn: String, reachableFiles: Seq[FileDescriptorProto]): Option[ProtoSymbol] =
     self.symbols.collectFirst { case ps: ProtoSymbol if ps.fqn == fqn && reachableFiles.contains(ps.source) => ps }
 
-  def fqns(typename: String, referrerFqn: String): Vector[String] =
+  private def fqns(typename: String, referrerFqn: String): Vector[String] =
     if (typename(0) == '.') Vector(typename.drop(1))
     else for (init <- referrerFqn.split('.').inits.toVector) yield (init :+ typename).mkString(".")
 

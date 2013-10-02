@@ -60,3 +60,15 @@ case class EnumSymbol(
   }"
 }
 
+case class FieldSymbol(
+  file: FileDescriptorProto,
+  source: Option[Location],
+  fqn: String,
+  descriptor: FieldDescriptorProto,
+  defn: TermSymbol)
+  extends ProtoSymbol {
+
+  def mkString = s"$fqn in ${file.name} -> member $defn"
+
+}
+
