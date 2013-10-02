@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf.symbols2
+package net.chwthewke.scala.protobuf.symbols
 
 import com.google.protobuf.DescriptorProtos._
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location

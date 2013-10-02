@@ -1,11 +1,11 @@
 package net.chwthewke.scala.protobuf
 
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto
-import net.chwthewke.scala.protobuf.symbols.EnumSymbols
-import net.chwthewke.scala.protobuf.symbols.SymbolTable
 import treehugger.forest._
 import treehugger.forest.treehuggerDSL._
-import net.chwthewke.scala.protobuf.symbols.SymbolTable
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.symbols.EnumSymbol
+import net.chwthewke.scala.protobuf.symbols.EnumSymbol
 
 trait EnumDescriptorProcess {
 
@@ -13,20 +13,25 @@ trait EnumDescriptorProcess {
 
   def self: EnumDescriptorProto
 
-  def symbolTable: SymbolTable
+  def symbolTable: ProtoSymbolTable
+
+  lazy val symbol: EnumSymbol = symbolTable.symbols.collectFirst {
+    case es @ EnumSymbol(_, _, _, enum, _, _) if enum == self => es
+  }.get
 
   def apply: Process[Vector[Tree]] = Process {
-    val enumSymbols: EnumSymbols = symbolTable.enums.symbols(self)
-    val enumClassSymbol = enumSymbols.enum
+
+    val enumClassSymbol = symbol.cls
     val classDef: Tree = CLASSDEF(enumClassSymbol).withFlags(Flags.SEALED, Flags.ABSTRACT)
-    classDef +: self.valueList.map { v =>
-      CASEOBJECTDEF(enumSymbols.values(v)).withParents(enumClassSymbol): Tree
+    classDef +: symbol.values.toVector.map {
+      case (_, obj) =>
+        CASEOBJECTDEF(obj).withParents(enumClassSymbol): Tree
     }
   }
 
 }
 
 object EnumDescriptorProcess {
-  def apply(enum: EnumDescriptorProto, sym: SymbolTable): Process[Vector[Tree]] =
+  def apply(enum: EnumDescriptorProto, sym: ProtoSymbolTable): Process[Vector[Tree]] =
     new EnumDescriptorProcess { def self = enum; def symbolTable = sym }.apply
 }

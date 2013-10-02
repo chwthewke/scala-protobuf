@@ -3,11 +3,10 @@ package net.chwthewke.scala.protobuf
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File
-import net.chwthewke.scala.protobuf.symbols.SymbolTable
-import net.chwthewke.scala.protobuf.symbols.FileSymbols
-import net.chwthewke.scala.protobuf.symbols.SymbolTable
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.symbols.FileSymbol
 
 trait FileDescriptorProcess {
 
@@ -17,22 +16,28 @@ trait FileDescriptorProcess {
   import treehugger.forest.definitions._
   import treehuggerDSL._
 
-  def file: FileDescriptorProto
+  def self: FileDescriptorProto
 
-  def symbolTable: SymbolTable
+  def symbolTable: ProtoSymbolTable
 
-  def moduleName = moduleSymbols.obj.nameString
+  def moduleName = symbol.obj.nameString
 
-  def targetFile: String = (file.javaPackage.split('.') :+ s"$moduleName.scala").mkString("/")
+  def targetFile: String = (self.javaPackage.split('.') :+ s"$moduleName.scala").mkString("/")
+
+  lazy val symbol: FileSymbol = {
+    symbolTable.symbols.collectFirst {
+      case fs @ FileSymbol(_, _, _, file, _, _) if file == self => fs
+    }.get
+  }
 
   def fileDef: Process[PackageDef] = {
     for {
-      messageDefs <- MessageContainerProcess(file, symbolTable)
+      messageDefs <- MessageContainerProcess(self, symbolTable)
     } yield BLOCK(
-      OBJECTDEF(moduleSymbols.obj) := BLOCK(
+      OBJECTDEF(symbol.obj) := BLOCK(
         messageDefs
       )
-    ) inPackage (moduleSymbols.pkg)
+    ) inPackage (symbol.pkg)
   }
 
   def responseFile: Process[CodeGeneratorResponse.File] = for {
@@ -42,17 +47,13 @@ trait FileDescriptorProcess {
     .setContent(treeToString(fileDef))
     .build
 
-  private def moduleSymbols: FileSymbols = {
-    symbolTable.files(file)
-  }
-
 }
 
 object FileDescriptorProcess {
-  def apply(symbolTable_ : SymbolTable, file_ : FileDescriptorProto): Process[CodeGeneratorResponse.File] =
+  def apply(sym: ProtoSymbolTable, f: FileDescriptorProto): Process[CodeGeneratorResponse.File] =
     new FileDescriptorProcess {
-      override val file = file_
-      override val symbolTable = symbolTable_
+      override val self = f
+      override val symbolTable = sym
     }.responseFile
 }
 

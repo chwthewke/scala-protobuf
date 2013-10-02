@@ -1,17 +1,16 @@
 package net.chwthewke.scala.protobuf.ref
 
-import net.chwthewke.scala.protobuf.symbols.DescriptorPath
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import net.chwthewke.scala.protobuf.Process
-import net.chwthewke.scala.protobuf.symbols.SymbolTable
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
 
 trait TypeReference {
 
-  def symbolTable: SymbolTable
+  def symbolTable: ProtoSymbolTable
 
-  def apply(typename: String, refererPath: DescriptorPath, refererFile: FileDescriptorProto) = {
+  def apply(typename: String, refererPath: String, refererFile: FileDescriptorProto) = {
 
-    pathSearchSpace(typename, refererPath.names)
+    pathSearchSpace(typename, refererPath.split('.').toVector)
 
     ???
 

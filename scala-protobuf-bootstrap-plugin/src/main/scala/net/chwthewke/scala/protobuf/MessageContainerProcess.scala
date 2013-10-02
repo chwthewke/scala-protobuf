@@ -1,11 +1,11 @@
 package net.chwthewke.scala.protobuf
 
-import net.chwthewke.scala.protobuf.symbols.SymbolTable
 import treehugger._
 import treehugger.forest._
 import com.google.protobuf.DescriptorProtos.{ FileDescriptorProto, DescriptorProto }
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
 
 trait MessageContainerProcess[A] {
 
@@ -15,7 +15,7 @@ trait MessageContainerProcess[A] {
 
   def self: A
 
-  def symbolTable: SymbolTable
+  def symbolTable: ProtoSymbolTable
 
   def apply: Process[Vector[Tree]] = {
 
@@ -27,7 +27,7 @@ trait MessageContainerProcess[A] {
 }
 
 object MessageContainerProcess {
-  def apply[A: MessageContainer](mc: A, sym: SymbolTable) = new MessageContainerProcess[A] {
+  def apply[A: MessageContainer](mc: A, sym: ProtoSymbolTable) = new MessageContainerProcess[A] {
     def MC = MessageContainer[A]
     def self = mc
     def symbolTable = sym

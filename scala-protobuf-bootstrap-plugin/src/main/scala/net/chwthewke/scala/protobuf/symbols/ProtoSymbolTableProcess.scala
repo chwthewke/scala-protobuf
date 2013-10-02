@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf.symbols2
+package net.chwthewke.scala.protobuf.symbols
 
 import net.chwthewke.scala.protobuf.PluginOps._
 import net.chwthewke.scala.protobuf.Process
