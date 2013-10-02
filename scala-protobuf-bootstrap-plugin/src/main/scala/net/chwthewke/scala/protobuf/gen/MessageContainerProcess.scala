@@ -2,14 +2,13 @@ package net.chwthewke.scala.protobuf.gen
 
 import net.chwthewke.scala.protobuf._
 import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.syntax._
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
 import treehugger._
 import treehugger.forest._
 
 trait MessageContainerProcess[A] {
-
-  import MessageContainer._
 
   implicit def MC: MessageContainer[A]
 

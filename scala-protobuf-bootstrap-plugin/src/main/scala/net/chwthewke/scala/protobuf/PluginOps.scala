@@ -91,4 +91,3 @@ trait PluginOps {
   }
 }
 
-object PluginOps extends PluginOps

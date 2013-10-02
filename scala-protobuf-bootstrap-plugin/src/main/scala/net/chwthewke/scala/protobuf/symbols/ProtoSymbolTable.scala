@@ -2,7 +2,7 @@ package net.chwthewke.scala.protobuf.symbols
 
 import com.google.protobuf.DescriptorProtos._
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location
-import net.chwthewke.scala.protobuf.PluginOps._
+import net.chwthewke.scala.protobuf.syntax._
 import treehugger.forest._
 
 case class ProtoSymbolTable(symbols: Vector[ProtoSymbol])

@@ -1,6 +1,7 @@
 package net.chwthewke.scala.protobuf
 
 import com.google.protobuf.DescriptorProtos.{ DescriptorProto, EnumDescriptorProto, FileDescriptorProto }
+import net.chwthewke.scala.protobuf.syntax._
 import scalaz.syntax.Ops
 
 trait MessageContainer[A] {
@@ -15,7 +16,12 @@ trait MessageContainer[A] {
 }
 
 object MessageContainer {
-  import PluginOps._
+
+  def apply[A](implicit MC: MessageContainer[A]): MessageContainer[A] = MC
+
+}
+
+trait MessageContainerSyntax {
 
   implicit val FileDescriptorInstance: MessageContainer[FileDescriptorProto] =
     new MessageContainer[FileDescriptorProto] {
@@ -48,6 +54,4 @@ object MessageContainer {
 
     def enumType = MC.enumType
   }
-
-  def apply[A](implicit MC: MessageContainer[A]): MessageContainer[A] = MC
 }

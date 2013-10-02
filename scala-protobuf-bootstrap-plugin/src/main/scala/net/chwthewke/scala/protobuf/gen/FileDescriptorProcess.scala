@@ -6,13 +6,12 @@ import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File
 import net.chwthewke.scala.protobuf._
 import net.chwthewke.scala.protobuf.symbols.FileSymbol
 import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.syntax._
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
 
 trait FileDescriptorProcess {
 
-  import PluginOps._
-  import MessageContainer._
   import treehugger.forest._
   import treehugger.forest.definitions._
   import treehuggerDSL._

@@ -9,8 +9,6 @@ import treehugger.forest.treehuggerDSL._
 
 trait EnumDescriptorProcess {
 
-  import PluginOps._
-
   def self: EnumDescriptorProto
 
   def symbolTable: ProtoSymbolTable

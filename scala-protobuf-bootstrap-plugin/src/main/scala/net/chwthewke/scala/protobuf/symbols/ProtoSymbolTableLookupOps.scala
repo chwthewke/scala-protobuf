@@ -1,7 +1,7 @@
 package net.chwthewke.scala.protobuf.symbols
 
 import com.google.protobuf.DescriptorProtos._
-import net.chwthewke.scala.protobuf.PluginOps._
+import net.chwthewke.scala.protobuf.syntax._
 import scalaz.syntax.Ops
 import scalaz.std.option._
 

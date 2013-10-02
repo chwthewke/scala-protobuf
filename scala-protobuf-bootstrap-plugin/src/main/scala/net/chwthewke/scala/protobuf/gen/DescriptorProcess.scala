@@ -4,6 +4,7 @@ import com.google.protobuf.DescriptorProtos.DescriptorProto
 import net.chwthewke.scala.protobuf._
 import net.chwthewke.scala.protobuf.symbols.MessageSymbol
 import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.syntax._
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
 import treehugger._
@@ -12,9 +13,6 @@ import treehugger.forest.definitions._
 import treehugger.forest.treehuggerDSL._
 
 trait DescriptorProcess {
-
-  import MessageContainer._
-  import PluginOps._
 
   def symbolTable: ProtoSymbolTable
 
