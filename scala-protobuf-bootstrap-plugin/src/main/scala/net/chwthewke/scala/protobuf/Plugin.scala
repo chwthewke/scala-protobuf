@@ -6,6 +6,7 @@ import scalaz.std.vector._
 import scalaz.syntax.traverse._
 import PluginOps._
 import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTableProcess
+import net.chwthewke.scala.protobuf.gen.FileDescriptorProcess
 
 trait Plugin {
 

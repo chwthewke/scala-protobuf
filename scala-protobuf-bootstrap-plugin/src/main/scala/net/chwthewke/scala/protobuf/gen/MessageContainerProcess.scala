@@ -1,11 +1,11 @@
-package net.chwthewke.scala.protobuf
+package net.chwthewke.scala.protobuf.gen
 
-import treehugger._
-import treehugger.forest._
-import com.google.protobuf.DescriptorProtos.{ FileDescriptorProto, DescriptorProto }
+import net.chwthewke.scala.protobuf._
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
-import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import treehugger._
+import treehugger.forest._
 
 trait MessageContainerProcess[A] {
 

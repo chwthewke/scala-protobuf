@@ -1,12 +1,13 @@
-package net.chwthewke.scala.protobuf
+package net.chwthewke.scala.protobuf.gen
 
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File
+import net.chwthewke.scala.protobuf._
+import net.chwthewke.scala.protobuf.symbols.FileSymbol
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
-import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
-import net.chwthewke.scala.protobuf.symbols.FileSymbol
 
 trait FileDescriptorProcess {
 

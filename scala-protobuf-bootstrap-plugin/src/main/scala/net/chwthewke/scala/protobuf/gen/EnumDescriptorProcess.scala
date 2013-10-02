@@ -1,11 +1,11 @@
-package net.chwthewke.scala.protobuf
+package net.chwthewke.scala.protobuf.gen
 
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto
+import net.chwthewke.scala.protobuf._
+import net.chwthewke.scala.protobuf.symbols.EnumSymbol
+import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
 import treehugger.forest._
 import treehugger.forest.treehuggerDSL._
-import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
-import net.chwthewke.scala.protobuf.symbols.EnumSymbol
-import net.chwthewke.scala.protobuf.symbols.EnumSymbol
 
 trait EnumDescriptorProcess {
 
