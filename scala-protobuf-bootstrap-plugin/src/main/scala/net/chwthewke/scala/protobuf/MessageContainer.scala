@@ -9,7 +9,6 @@ trait MessageContainer[A] {
 
   def enums(a: A): Vector[EnumDescriptorProto]
 
-  // TODO get these from the actual field numbers ?
   def messageType: Int
 
   def enumType: Int
@@ -29,9 +28,9 @@ trait MessageContainerSyntax {
 
       def enums(file: FileDescriptorProto) = file.enumTypeList
 
-      def messageType = 4
+      def messageType = FileDescriptorProto.MESSAGE_TYPE_FIELD_NUMBER
 
-      def enumType = 5
+      def enumType = FileDescriptorProto.ENUM_TYPE_FIELD_NUMBER
     }
 
   implicit val MessageDescriptorInstance: MessageContainer[DescriptorProto] =
@@ -40,9 +39,9 @@ trait MessageContainerSyntax {
 
       def enums(descriptor: DescriptorProto) = descriptor.enumTypeList
 
-      def messageType = 3
+      def messageType = DescriptorProto.NESTED_TYPE_FIELD_NUMBER
 
-      def enumType = 4
+      def enumType = DescriptorProto.ENUM_TYPE_FIELD_NUMBER
     }
 
   implicit class MessageContainerOps[A](override val self: A)(implicit MC: MessageContainer[A]) extends Ops[A] {
