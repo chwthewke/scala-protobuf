@@ -15,9 +15,7 @@ trait EnumDescriptorProcess {
 
   def symbolTable: ProtoSymbolTable
 
-  lazy val symbol: EnumSymbol = symbolTable.symbols.collectFirst {
-    case es @ EnumSymbol(_, _, _, enum, _, _) if enum == self => es
-  }.get
+  lazy val symbol: EnumSymbol = symbolTable.enum(self).get
 
   def apply: Process[Vector[Tree]] = Process {
 

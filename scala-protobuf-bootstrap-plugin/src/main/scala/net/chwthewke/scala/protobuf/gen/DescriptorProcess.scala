@@ -20,9 +20,7 @@ trait DescriptorProcess {
 
   def self: DescriptorProto
 
-  lazy val symbol: MessageSymbol = symbolTable.symbols.collectFirst {
-    case ms @ MessageSymbol(_, _, _, descriptor, _, _) if descriptor == self => ms
-  }.get
+  lazy val symbol: MessageSymbol = symbolTable.message(self).get
 
   def apply: Process[Vector[Tree]] = {
 

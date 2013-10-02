@@ -25,11 +25,7 @@ trait FileDescriptorProcess {
 
   def targetFile: String = (self.javaPackage.split('.') :+ s"$moduleName.scala").mkString("/")
 
-  lazy val symbol: FileSymbol = {
-    symbolTable.symbols.collectFirst {
-      case fs @ FileSymbol(_, _, _, file, _, _) if file == self => fs
-    }.get
-  }
+  lazy val symbol: FileSymbol = symbolTable.file(self).get
 
   def fileDef: Process[PackageDef] = {
     for {

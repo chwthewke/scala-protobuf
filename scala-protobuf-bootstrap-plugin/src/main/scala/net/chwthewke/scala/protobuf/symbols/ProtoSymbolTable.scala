@@ -7,6 +7,12 @@ import treehugger.forest._
 
 case class ProtoSymbolTable(symbols: Vector[ProtoSymbol])
 
+object ProtoSymbolTable {
+  implicit class LookupOps(pst: ProtoSymbolTable) extends ProtoSymbolTableLookupOps {
+    def self = pst
+  }
+}
+
 sealed abstract class ProtoSymbol {
   def file: FileDescriptorProto
   def source: Option[Location]
