@@ -1,9 +1,12 @@
 package net.chwthewke.scala.protobuf.gen
 
 import com.google.protobuf.DescriptorProtos._
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label._
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type._
 import treehugger.forest._
+import treehugger.forest.{ Type => SType }
 import treehugger.forest.definitions._
 import treehugger.forest.treehuggerDSL._
 import net.chwthewke.scala.protobuf.Process
@@ -25,7 +28,14 @@ trait FieldDescriptorProcess {
   def apply: Process[ValDef] = Process {
     val typ = typeSymbol.lift(self.typ -> self.typeName).get
 
-    VAL(symbol.defn, typ)
+    // TODO move to FieldSymbol ?
+    val modTyp: SType = (typ, self.label) match {
+      case (cls: ClassSymbol, LABEL_OPTIONAL) => optionType(cls)
+      case (cls: ClassSymbol, LABEL_REPEATED) => appliedType(VectorClass.typeConstructor, List[SType](cls))
+      case _ => typ
+    }
+
+    VAL(symbol.defn, modTyp)
   }
 
   private def typeSymbol: PartialFunction[(Type, Option[String]), Symbol] = {
