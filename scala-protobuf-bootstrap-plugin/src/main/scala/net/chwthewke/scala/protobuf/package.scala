@@ -9,7 +9,7 @@ package object protobuf {
 
   type ProcessW[W, X] = ReaderWriterState[CodeGeneratorRequest, W, Unit, X]
 
-  object syntax extends ProcessSyntax with MessageContainerSyntax with PluginOps
+  object syntax extends ProcessSyntax with MessageContainerSyntax with PluginSyntax
 
   val Process = syntax.Process
 }

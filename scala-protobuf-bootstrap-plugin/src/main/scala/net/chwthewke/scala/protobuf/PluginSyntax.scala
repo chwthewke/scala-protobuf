@@ -7,7 +7,7 @@ import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.language.implicitConversions
 import scala.language.reflectiveCalls
 
-trait PluginOps {
+trait PluginSyntax {
 
   implicit private def ToVector[A](it: java.util.List[A]) = new {
     def toVector = it.asScala.toVector
