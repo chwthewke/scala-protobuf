@@ -15,9 +15,13 @@ trait ProtoSymbolTableProcess {
       file <- req.protoFileList
       symbol <- fileSymbol(file)
     } yield symbol
+
+    def symbolTable(req: CodeGeneratorRequest): ProtoSymbolTable =
+      ComputeFieldTypes(ProtoSymbolTable(symbols(req)))
+
     for {
-      syms <- Process.ask.map(symbols) :++>> (_.map(s => s"PST: ${s.mkString}"))
-    } yield ProtoSymbolTable(syms)
+      syms <- Process.ask.map(symbolTable) :++>> (_.symbols.map(s => s"PST: ${s.mkString}"))
+    } yield syms
   }
 
   def fileSymbol(descriptor: FileDescriptorProto): Vector[ProtoSymbol] = {
@@ -84,18 +88,18 @@ trait ProtoSymbolTableProcess {
     messageSymbols ++ enumSymbols
   }
 
-  def fieldSymbols(ctx: Ctx, message: DescriptorProto): Vector[FieldSymbol] = {
+  def fieldSymbols(ctx: Ctx, message: DescriptorProto): Vector[RawFieldSymbol] = {
     message.fieldList.zipWithIndex.map {
       case (f, i) =>
         fieldSymbol(ctx.copy(path = ctx.path :+ DescriptorProto.FIELD_FIELD_NUMBER :+ i), f)
     }
   }
 
-  def fieldSymbol(ctx: Ctx, field: FieldDescriptorProto): FieldSymbol = {
+  def fieldSymbol(ctx: Ctx, field: FieldDescriptorProto): RawFieldSymbol = {
     val name = Names.field(field.name)
     val sym = ctx.cont.newValue(name)
 
-    FieldSymbol(
+    RawFieldSymbol(
       ctx.src,
       ctx.location,
       s"${ctx.pfqn}.${field.name}",

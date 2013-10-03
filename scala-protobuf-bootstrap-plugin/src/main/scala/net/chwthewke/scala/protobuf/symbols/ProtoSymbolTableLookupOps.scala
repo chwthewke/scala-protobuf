@@ -24,7 +24,7 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
 
   def field(descriptor: FieldDescriptorProto): Option[FieldSymbol] =
     self.symbols.collectFirst {
-      case fs @ FieldSymbol(_, _, _, f, _) if descriptor == f => fs
+      case fs @ FieldSymbol(_, _, _, f, _, _, _) if descriptor == f => fs
     }
 
   def findByName(typename: String, referrerFqn: String, referrerSource: FileDescriptorProto): Option[ProtoSymbol] = {
