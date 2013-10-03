@@ -15,7 +15,7 @@ trait EnumDescriptorProcess {
 
   lazy val symbol: EnumSymbol = symbolTable.enum(self).get
 
-  def apply: Process[Vector[Tree]] = Process {
+  def apply: Process[Vector[Tree]] = process {
 
     val enumClassSymbol = symbol.cls
     val classDef: Tree = CLASSDEF(enumClassSymbol).withFlags(Flags.SEALED, Flags.ABSTRACT)

@@ -1,6 +1,6 @@
 package net.chwthewke.scala.protobuf.gen
 
-import com.google.protobuf.DescriptorProtos.DescriptorProto
+import com.google.protobuf.DescriptorProtos._
 import net.chwthewke.scala.protobuf._
 import net.chwthewke.scala.protobuf.symbols.MessageSymbol
 import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
@@ -11,6 +11,7 @@ import treehugger._
 import treehugger.forest._
 import treehugger.forest.definitions._
 import treehugger.forest.treehuggerDSL._
+import net.chwthewke.scala.protobuf.symbols.FieldSymbol
 
 trait DescriptorProcess {
 
@@ -25,7 +26,7 @@ trait DescriptorProcess {
     for {
       nested <- MessageContainerProcess(self, symbolTable)
       enums <- self.enumTypeList.map(EnumDescriptorProcess(_, symbolTable)).sequence
-      fields <- self.fieldList.map(FieldDescriptorProcess(_, symbolTable)).sequence
+      fields <- self.fieldList.map(classVal).sequence
     } yield Vector[Tree](
       CASECLASSDEF(symbol.cls) withParams (fields),
       objectDef(nested ++ enums.flatten)
@@ -38,6 +39,12 @@ trait DescriptorProcess {
     if (content.isEmpty) od
     else od := BLOCK(content)
   }
+
+  private def classVal(field: FieldDescriptorProto): Process[ValDef] = process {
+    val symbol: FieldSymbol = symbolTable.field(field).get
+    VAL(symbol.defn, symbol.fieldType)
+  }
+
 }
 
 object DescriptorProcess {
