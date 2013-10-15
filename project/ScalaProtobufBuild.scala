@@ -3,8 +3,8 @@ import java.nio.file.Files
 import sbt._
 import sbt.Keys._
 
-import sbtprotobuf.ProtobufPlugin.ProtocPlugin
 import sbtprotobuf.{ProtobufPlugin => PB}
+import sbtprotobuf.ProtobufPlugin.ProtocPlugin
 import sbtbuildinfo.Plugin._
 import sbtassembly.Plugin._
 import AssemblyKeys._
@@ -41,7 +41,8 @@ object ScalaProtobufBuild extends Build {
     id = "scala-protobuf",
     base = file("scala-protobuf"),
     settings = Project.defaultSettings ++
-      ScalaProtobufDefaults :+
+      ScalaProtobufDefaults ++
+      scalaProtobufSettings ++
       (name := "scala-protobuf")
   )
 
@@ -50,18 +51,12 @@ object ScalaProtobufBuild extends Build {
     base = file("scala-protobuf-plugin"),
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults ++
-      PB.protobufSettings ++
+      scalaProtobufSettings ++
+      includeProtobufSettings ++
       myBuildInfoSettings
   ).settings(
     name := "scala-protobuf-plugin",
-    libraryDependencies ++= Seq(scalaz, treehugger),
-    version in PB.protobufConfig := "2.5.0",
-    PB.plugins in PB.protobufConfig := Seq(
-      ProtocPlugin("scala", (sourceManaged in Compile).value / "compiled_protobuf",
-        Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value),
-        _ ** "*.scala")),
-    PB.generate in PB.protobufConfig <<=
-      (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
+    libraryDependencies ++= Seq(scalaz, treehugger)
   ).dependsOn(
     scalaProtobufRuntime
   )
@@ -71,18 +66,34 @@ object ScalaProtobufBuild extends Build {
     base = file("scala-protobuf-bootstrap-plugin"),
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults ++
-      PB.protobufSettings ++
+      baseProtobufSettings ++
+      includeProtobufSettings ++
       myBuildInfoSettings ++
       assemblySettings ++
       launcherSettings
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
     mainClass := Some("net.chwthewke.scala.protobuf.bsplugin.run.PluginMain"),
-    libraryDependencies ++= Seq(scalaz, treehugger),
-    version in PB.protobufConfig := "2.5.0",
-    PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc"
-  ).dependsOn(
-    scalaProtobufRuntime
+    libraryDependencies ++= Seq(scalaz, treehugger)
+  )
+
+  def baseProtobufSettings = PB.protobufSettings ++ Seq(
+    version in PB.protobufConfig := "2.5.0"
+  )
+
+  def includeProtobufSettings =
+    Seq(PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc")
+
+
+  def scalaProtobufSettings = baseProtobufSettings ++ Seq(
+    PB.plugins in PB.protobufConfig := Seq(
+      ProtocPlugin(
+        "scala",
+        (sourceManaged in Compile).value / "compiled_protobuf",
+        Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value),
+        _ ** "*.scala")),
+    PB.generate in PB.protobufConfig <<=
+      (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
   )
 
   lazy val launchBatName: SettingKey[File] = settingKey[File]("Location of launcher .bat")

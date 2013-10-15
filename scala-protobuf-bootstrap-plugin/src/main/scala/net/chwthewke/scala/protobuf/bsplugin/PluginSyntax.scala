@@ -15,6 +15,7 @@ trait PluginSyntax {
 
   implicit class CodeGeneratorRequestOps(val self: CodeGeneratorRequest) {
     def protoFileList = self.getProtoFileList.toVector
+    def fileToGenerateList = self.getFileToGenerateList.toVector
   }
 
   implicit class FileDescriptorProtoOps(self: FileDescriptorProto) {
