@@ -1,9 +1,9 @@
-package net.chwthewke.scala
+package net.chwthewke.scala.protobuf
 
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import scalaz.ReaderWriterState
 
-package object protobuf {
+package object bsplugin {
 
   type Process[X] = ReaderWriterState[CodeGeneratorRequest, Vector[String], Unit, X]
 

@@ -77,7 +77,7 @@ object ScalaProtobufBuild extends Build {
       launcherSettings
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
-    mainClass := Some("net.chwthewke.scala.protobuf.PluginMain"),
+    mainClass := Some("net.chwthewke.scala.protobuf.bsplugin.run.PluginMain"),
     libraryDependencies ++= Seq(scalaz, treehugger),
     version in PB.protobufConfig := "2.5.0",
     PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc"

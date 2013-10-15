@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf
+package net.chwthewke.scala.protobuf.bsplugin
 
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import com.google.protobuf.DescriptorProtos._

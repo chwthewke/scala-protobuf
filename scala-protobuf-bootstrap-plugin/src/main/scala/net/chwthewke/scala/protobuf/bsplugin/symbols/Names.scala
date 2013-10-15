@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf.symbols
+package net.chwthewke.scala.protobuf.bsplugin.symbols
 
 trait Names {
   def message(s: String) = s.split("_").map(_.capitalize).mkString("")

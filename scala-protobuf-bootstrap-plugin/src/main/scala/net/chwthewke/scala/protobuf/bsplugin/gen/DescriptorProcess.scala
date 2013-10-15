@@ -1,17 +1,17 @@
-package net.chwthewke.scala.protobuf.gen
+package net.chwthewke.scala.protobuf.bsplugin.gen
 
 import com.google.protobuf.DescriptorProtos._
-import net.chwthewke.scala.protobuf._
-import net.chwthewke.scala.protobuf.symbols.MessageSymbol
-import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
-import net.chwthewke.scala.protobuf.syntax._
+import net.chwthewke.scala.protobuf.bsplugin._
+import net.chwthewke.scala.protobuf.bsplugin.symbols.FieldSymbol
+import net.chwthewke.scala.protobuf.bsplugin.symbols.MessageSymbol
+import net.chwthewke.scala.protobuf.bsplugin.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
 import treehugger._
 import treehugger.forest._
 import treehugger.forest.definitions._
 import treehugger.forest.treehuggerDSL._
-import net.chwthewke.scala.protobuf.symbols.FieldSymbol
 
 trait DescriptorProcess {
 

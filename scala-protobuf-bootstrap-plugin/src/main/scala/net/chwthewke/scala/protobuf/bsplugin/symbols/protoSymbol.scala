@@ -1,8 +1,8 @@
-package net.chwthewke.scala.protobuf.symbols
+package net.chwthewke.scala.protobuf.bsplugin.symbols
 
 import com.google.protobuf.DescriptorProtos._
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location
-import net.chwthewke.scala.protobuf.syntax._
+import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import treehugger.forest._
 
 sealed abstract class ProtoSymbol {

@@ -1,6 +1,6 @@
-package net.chwthewke.scala.protobuf
+package net.chwthewke.scala.protobuf.bsplugin.run
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
+import net.chwthewke.scala.protobuf.bsplugin.Plugin
 
 object PluginMain extends PluginDriver {
 

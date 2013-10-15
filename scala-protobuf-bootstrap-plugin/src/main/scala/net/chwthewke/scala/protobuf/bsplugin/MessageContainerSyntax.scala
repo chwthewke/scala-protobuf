@@ -1,7 +1,7 @@
-package net.chwthewke.scala.protobuf
+package net.chwthewke.scala.protobuf.bsplugin
 
 import com.google.protobuf.DescriptorProtos.{ DescriptorProto, FileDescriptorProto }
-import net.chwthewke.scala.protobuf.syntax._
+import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import scalaz.syntax.Ops
 
 trait MessageContainerSyntax {

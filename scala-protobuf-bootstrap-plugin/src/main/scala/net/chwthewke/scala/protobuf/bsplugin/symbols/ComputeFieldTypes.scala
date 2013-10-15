@@ -1,16 +1,16 @@
-package net.chwthewke.scala.protobuf.symbols
+package net.chwthewke.scala.protobuf.bsplugin.symbols
 
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label._
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.{ Type => FType }
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type._
-import net.chwthewke.scala.protobuf.syntax._
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto
+import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import treehugger._
 import treehugger.forest._
 import treehugger.forest.definitions._
 import treehugger.forest.treehuggerDSL._
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto
-import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 
 private[symbols] object ComputeFieldTypes {
 

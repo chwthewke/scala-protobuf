@@ -1,8 +1,8 @@
-package net.chwthewke.scala.protobuf.symbols
+package net.chwthewke.scala.protobuf.bsplugin.symbols
 
-import net.chwthewke.scala.protobuf.Process
-import net.chwthewke.scala.protobuf.MessageContainer
-import net.chwthewke.scala.protobuf.syntax._
+import net.chwthewke.scala.protobuf.bsplugin.MessageContainer
+import net.chwthewke.scala.protobuf.bsplugin.Process
+import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import treehugger.forest._
 import treehugger.forest.definitions._
 import com.google.protobuf.DescriptorProtos._

@@ -1,9 +1,9 @@
-package net.chwthewke.scala.protobuf.gen
+package net.chwthewke.scala.protobuf.bsplugin.gen
 
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto
-import net.chwthewke.scala.protobuf._
-import net.chwthewke.scala.protobuf.symbols.EnumSymbol
-import net.chwthewke.scala.protobuf.symbols.ProtoSymbolTable
+import net.chwthewke.scala.protobuf.bsplugin._
+import net.chwthewke.scala.protobuf.bsplugin.symbols.EnumSymbol
+import net.chwthewke.scala.protobuf.bsplugin.symbols.ProtoSymbolTable
 import treehugger.forest._
 import treehugger.forest.treehuggerDSL._
 
