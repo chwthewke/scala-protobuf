@@ -4,6 +4,8 @@ import com.google.protobuf.compiler.PluginProtos.{ CodeGeneratorRequest, CodeGen
 import net.chwthewke.scala.protobuf.bsplugin._
 import scala.util.Try
 import scala.util.control.NonFatal
+import java.io.PrintWriter
+import java.io.StringWriter
 
 trait PluginDriver {
 
@@ -20,10 +22,19 @@ trait PluginDriver {
 
   private def safe(response: Try[CodeGeneratorResponse]): CodeGeneratorResponse =
     response.recover {
-      case NonFatal(e) => CodeGeneratorResponse.newBuilder
-        .setError(e.toString)
-        .build
+      case NonFatal(e) =>
+        CodeGeneratorResponse.newBuilder
+          .setError(e.toString + "\n" + stackTraceOf(e))
+          .build
     }.get
+
+  private def stackTraceOf(e: Throwable): String = {
+    val sw = new StringWriter
+    val pw = new PrintWriter(sw)
+    val res = Try { e.printStackTrace(pw); sw.toString }
+    pw.close
+    res.get
+  }
 
   def run(p: Process[CodeGeneratorResponse]): Unit = safe(respond(p)).writeTo(System.out)
 
