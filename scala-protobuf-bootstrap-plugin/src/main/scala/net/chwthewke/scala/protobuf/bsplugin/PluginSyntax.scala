@@ -26,15 +26,15 @@ trait PluginSyntax {
     def enumTypeList = self.getEnumTypeList.toVector
     def dependencyList = self.getDependencyList.toVector
 
-    def sourceCodeInfo = Option(self.getSourceCodeInfo)
+    def sourceCodeInfo = if (self.hasSourceCodeInfo) Some(self.getSourceCodeInfo) else None
 
     def javaPackage = options.javaPackage.getOrElse(pkg)
     def javaOuterClassName = options.javaOuterClassName.getOrElse(name.stripSuffix(".proto").capitalize)
   }
 
   implicit class FileOptionsOps(self: FileOptions) {
-    def javaPackage = Option(self.getJavaPackage)
-    def javaOuterClassName = Option(self.getJavaOuterClassname)
+    def javaPackage = if (self.hasJavaPackage) Some(self.getJavaPackage) else None
+    def javaOuterClassName = if (self.hasJavaOuterClassname) Some(self.getJavaOuterClassname) else None
 
   }
 
@@ -60,8 +60,8 @@ trait PluginSyntax {
     def label = self.getLabel
     def number = self.getNumber
     def typ = self.getType
-    def typeName = Option(self.getTypeName)
-    def defaultValue = Option(self.getDefaultValue)
+    def typeName = if (self.hasTypeName) Some(self.getTypeName) else None
+    def defaultValue = if (self.hasDefaultValue) Some(self.getDefaultValue) else None
   }
 
   implicit class SourceCodeInfoOps(self: SourceCodeInfo) {
