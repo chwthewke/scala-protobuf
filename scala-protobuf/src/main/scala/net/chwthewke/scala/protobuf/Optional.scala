@@ -3,6 +3,8 @@ package net.chwthewke.scala.protobuf
 trait Optional[T, M] extends Singular[T, Option[T], M] {
   override def eval(in: Option[T]): Option[T] = in
   override def lift(f: Option[T]): Option[T] = f
+
+  // TODO def defaultForType : T ?
 }
 
 object Optional {
