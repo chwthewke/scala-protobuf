@@ -97,7 +97,7 @@ trait ProtoSymbolTableProcess {
 
   def fieldSymbol(ctx: Ctx, field: FieldDescriptorProto): RawFieldSymbol = {
     val name = Names.field(field.name)
-    val sym = ctx.cont.newValue(name)
+    val sym: TermName = name
 
     RawFieldSymbol(
       ctx.src,

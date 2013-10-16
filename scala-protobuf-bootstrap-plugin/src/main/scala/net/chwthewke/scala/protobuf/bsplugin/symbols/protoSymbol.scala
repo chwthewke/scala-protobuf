@@ -57,7 +57,7 @@ private[symbols] case class RawFieldSymbol(
   source: Option[Location],
   fqn: String,
   descriptor: FieldDescriptorProto,
-  defn: TermSymbol)
+  defn: TermName)
   extends ProtoSymbol {
 
   def mkString = s"$fqn in ${file.name} -> member $defn"
@@ -69,14 +69,15 @@ case class FieldSymbol(
   source: Option[Location],
   fqn: String,
   descriptor: FieldDescriptorProto,
-  defn: TermSymbol,
+  defn: TermName,
+  componentRef: ProtoRef,
   componentType: Type,
   fieldType: Type)
   extends ProtoSymbol {
 
-  def this(fs: RawFieldSymbol, compType: Type, fType: Type) = this(
+  def this(fs: RawFieldSymbol, compRef: ProtoRef, compType: Type, fType: Type) = this(
     fs.file, fs.source, fs.fqn, fs.descriptor, fs.defn,
-    compType, fType)
+    compRef, compType, fType)
 
   def mkString = s"$fqn in ${file.name} -> member $defn: $fieldType"
 

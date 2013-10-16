@@ -42,7 +42,7 @@ trait ComputeFieldTypes {
   def file: FileDescriptorProto = fieldSymbol.file
 
   def apply(): FieldSymbol = {
-    val typ = typeSymbol.lift(fieldSymbol.descriptor.typ -> fieldSymbol.descriptor.typeName).get
+    val (ref, typ) = typeSymbol.lift(fieldSymbol.descriptor.typ -> fieldSymbol.descriptor.typeName).get
 
     val modTyp: Type = (typ, fieldSymbol.descriptor.label) match {
       case (cls: ClassSymbol, LABEL_OPTIONAL) => optionType(cls)
@@ -50,14 +50,22 @@ trait ComputeFieldTypes {
       case _ => typ
     }
 
-    new FieldSymbol(fieldSymbol, typ, modTyp)
+    new FieldSymbol(fieldSymbol, ref, typ, modTyp)
   }
 
-  private def typeSymbol: PartialFunction[(FType, Option[String]), Symbol] = {
+  private def typeSymbol: PartialFunction[(FType, Option[String]), (ProtoRef, Symbol)] =
+    (simpleTypeSymbol andThen (s => (NoProtoRef, s))) orElse referenceTypeSymbol
+
+  private def referenceTypeSymbol: PartialFunction[(FType, Option[String]), (ProtoRef, Symbol)] = {
+    case (TYPE_ENUM, Some(typeName)) => enum(typeName)
+    case (TYPE_GROUP, Some(typeName)) => message(typeName)
+    case (TYPE_MESSAGE, Some(typeName)) => message(typeName)
+  }
+
+  private def simpleTypeSymbol: PartialFunction[(FType, Option[String]), Symbol] = {
     case (TYPE_BOOL, _) => BooleanClass
     case (TYPE_BYTES, _) => ByteStringClass
     case (TYPE_DOUBLE, _) => DoubleClass
-    case (TYPE_ENUM, Some(typeName)) => enum(typeName)
     case (TYPE_FIXED32, _) | (TYPE_INT32, _) |
       (TYPE_SFIXED32, _) | (TYPE_SINT32, _) |
       (TYPE_UINT32, _) => IntClass
@@ -65,17 +73,15 @@ trait ComputeFieldTypes {
       (TYPE_SFIXED64, _) | (TYPE_SINT64, _) |
       (TYPE_UINT64, _) => LongClass
     case (TYPE_FLOAT, _) => FloatClass
-    case (TYPE_GROUP, Some(typeName)) => message(typeName)
-    case (TYPE_MESSAGE, Some(typeName)) => message(typeName)
     case (TYPE_STRING, _) => StringClass
   }
 
-  def enum(typeName: String): Symbol = symbolTable.findByName(typeName, fqn, file).collect {
-    case EnumSymbol(_, _, _, _, cls, _) => cls
+  def enum(typeName: String): (ProtoRef, Symbol) = symbolTable.findByName(typeName, fqn, file).collect {
+    case EnumSymbol(_, _, _, desc, cls, _) => (EnumRef(desc), cls)
   }.get
 
-  def message(typeName: String): Symbol = symbolTable.findByName(typeName, fqn, file).collect {
-    case MessageSymbol(_, _, _, _, cls, _) => cls
+  def message(typeName: String): (ProtoRef, Symbol) = symbolTable.findByName(typeName, fqn, file).collect {
+    case MessageSymbol(_, _, _, desc, cls, _) => (MessageRef(desc), cls)
   }.get
 
 }
