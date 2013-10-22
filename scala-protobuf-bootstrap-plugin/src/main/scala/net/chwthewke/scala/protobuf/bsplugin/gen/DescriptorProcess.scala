@@ -101,7 +101,7 @@ trait DescriptorProcess {
       value <- enumSymbol.values.find {
         case (evdp, _) => evdp.name == v
       }
-    } yield REF(value._2.fullName)
+    } yield (symbol.obj DOT enumSymbol.cls DOT value._2.module)
 
     def explicitDefault(v: String): Option[Tree] = field.typ match {
       case TYPE_BOOL => Some(LIT(v.trim.toBoolean))

@@ -9,6 +9,9 @@ package object symbols {
 
   val ByteStringClass: Symbol = RuntimePackage.newClass("ByteString")
 
+  val ProtobufEnumTrait: Symbol = RuntimePackage.newClass("ProtobufEnum")
+  val NumberedTrait: Symbol = RuntimePackage.newClass("Numbered")
+
   val MessageTrait: ClassSymbol = RuntimePackage.newClass("Message")
   val MessageSyntaxTrait: ClassSymbol = RuntimePackage.newClass("MessageSyntax")
 

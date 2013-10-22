@@ -1,15 +1,12 @@
 package net.chwthewke.scala.protobuf
 
-trait Field[I, O, M] {
+trait Field[I, O, M] extends Numbered {
   self =>
 
   trait Update {
     def field: Field[I, O, M] = self
     def apply(in: I): I
   }
-
-  def name: String
-  def number: Int
 
   def get(m: M): O
   def lift(f: O): I
