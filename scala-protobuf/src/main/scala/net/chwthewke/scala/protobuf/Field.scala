@@ -1,23 +1,23 @@
 package net.chwthewke.scala.protobuf
 
-trait Field[I, O, M] extends Numbered {
+trait Field[C, T, M] extends Numbered {
   self =>
 
   trait Update {
-    def field: Field[I, O, M] = self
-    def apply(in: I): I
+    def field: Field[C, T, M] = self
+    def apply(in: Vector[C]): Vector[C]
   }
 
-  def get(m: M): O
-  def lift(f: O): I
-  def default: I
-  def eval(in: I): O
-  def merge(left: I, right: I): I
+  def get(m: M): T
+  def lift(f: T): Vector[C]
+  def eval(in: Vector[C]): T
 
-  def unary_- : Update = set(default)
+  def merge(left: Vector[C], right: Vector[C]): Vector[C] = left ++ right
 
-  protected def set(t: I): Update = new Update { override def apply(_t: I) = t }
+  def unary_- : Update = set(Vector.empty)
 
-  protected def alter(f: I => I): Update = new Update { override def apply(t: I) = f(t) }
+  protected def set(cs: Vector[C]): Update = new Update { override def apply(v: Vector[C]) = cs }
+
+  protected def alter(f: Vector[C] => Vector[C]): Update = new Update { override def apply(cs: Vector[C]) = f(cs) }
 
 }

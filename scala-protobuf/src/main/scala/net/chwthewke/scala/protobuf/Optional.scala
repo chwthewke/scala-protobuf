@@ -1,19 +1,19 @@
 package net.chwthewke.scala.protobuf
 
-trait Optional[T, M] extends Singular[T, Option[T], M] {
-  override def eval(in: Option[T]): Option[T] = in
-  override def lift(f: Option[T]): Option[T] = f
+trait Optional[C, M] extends Singular[C, Option[C], M] {
+  override def eval(in: Vector[C]): Option[C] = in.lastOption
+  override def lift(f: Option[C]): Vector[C] = f.toVector
 
-  // TODO def defaultForType : T ?
+  // TODO def defaultForType : C ?
 }
 
 object Optional {
-  def apply[T, M](name: String, number: Int, getter: M => Option[T]) = {
+  def apply[C, M](name: String, number: Int, getter: M => Option[C]) = {
     val (n, i) = (name, number)
-    new Optional[T, M] {
+    new Optional[C, M] {
       override def name: String = n
       override def number: Int = i
-      override def get(m: M): Option[T] = getter(m)
+      override def get(m: M): Option[C] = getter(m)
     }
   }
 }

@@ -4,13 +4,14 @@ trait Message[M] {
 
   implicit def M: Message[M] = this
 
-  def fields: Seq[Field[_, _, M]]
+  def fields: Vector[Field[_, _, M]]
 
   def build(p: Builder[M]): M
 
   def lift(m: M): Builder[M] = {
-    def liftField[I, O](field: Field[I, O, M]): I =
+    def liftField[C, T](field: Field[C, T, M]): Vector[C] =
       field.lift(field.get(m))
+
     new Builder[M](fields.map(f => f -> liftField(f)).toMap)
   }
 

@@ -2,18 +2,28 @@ package net.chwthewke.scala.protobuf
 
 import scala.language.implicitConversions
 
-class Builder[M] private[protobuf] (private[Builder] val fields: Map[Field[_, _, M], Any]) {
+class Builder[M] private[protobuf] (fieldSet: Map[Field[_, _, M], Vector[Any]]) {
 
-  def get[I](field: Field[I, _, M]): I = fields.get(field).fold(field.default)(_.asInstanceOf[I])
+  val fields = fieldSet.withDefault(_ => Vector.empty)
 
-  def eval[I, O](field: Field[I, O, M]): O = field.eval(get(field))
+  def get[C](field: Field[C, _, M]): Vector[C] = fields(field).asInstanceOf[Vector[C]]
 
-  def update[I, O](mod: Field[I, O, M]#Update): Builder[M] =
+  def eval[C, T](field: Field[C, T, M]): T = field.eval(get(field))
+
+  def update[C, T](mod: Field[C, T, M]#Update): Builder[M] =
     new Builder(fields + (mod.field -> mod.apply(get(mod.field))))
 
-  def apply(mods: FieldUpdate[M]*) = (this /: mods) { _.update(_) }
+  def apply(mods: FieldUpdate[M]*) = (this /: mods) { _ update _ }
 
-  def ++(other: Builder[M]) = new Builder(fields ++ other.fields)
+  def ++(other: Builder[M]) = {
+    val kvs = for {
+      k <- (fields.keySet union other.fields.keySet).toSeq.sortBy(_.number)
+    } yield (k, mergeField(k, other))
+    new Builder[M](kvs.toMap)
+  }
+
+  private def mergeField[C, T](field: Field[C, T, M], other: Builder[M]): Vector[C] =
+    field.merge(get(field), other.get(field))
 
   def build(implicit M: Message[M]) = M.build(this)
 }
@@ -23,8 +33,8 @@ object Builder {
   def apply[M](mods: FieldUpdate[M]*)(implicit M: Message[M]): Builder[M] =
     new Builder[M](Map()).apply(mods: _*)
 
-  implicit def toSingularOps[I, O, M](field: Singular[I, O, M]) =
-    new SingularOps[I, O, M] { def self = field }
+  implicit def toSingularOps[C, T, M](field: Singular[C, T, M]) =
+    new SingularOps[C, T, M] { def self = field }
 
   implicit def toRepeatedOps[T, M](field: Repeated[T, M]) =
     new RepeatedOps[T, M] { def self = field }
