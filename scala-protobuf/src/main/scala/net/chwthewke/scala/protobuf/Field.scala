@@ -8,11 +8,14 @@ trait Field[C, T, M] extends Numbered {
     def apply(in: Vector[C]): Vector[C]
   }
 
+  def fieldType: FieldType[C]
+
   def get(m: M): T
   def lift(f: T): Vector[C]
   def eval(in: Vector[C]): T
 
-  def merge(left: Vector[C], right: Vector[C]): Vector[C] = left ++ right
+  def merge(left: Vector[C], right: Vector[C]): Vector[C]
+  def <+=(c: C): Update
 
   def unary_- : Update = set(Vector.empty)
 

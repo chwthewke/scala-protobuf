@@ -47,8 +47,50 @@ trait DescriptorProcess {
 
     VAL(fieldSymbol.defn) := (fieldTypeModule
       APPLYTYPE (fieldSymbol.componentType, symbol.cls)
-      APPLY (LIT(field.name), LIT(field.number), WILDCARD DOT fieldSymbol.defn))
+      APPLY (LIT(field.name), LIT(field.number), fieldType(field), WILDCARD DOT fieldSymbol.defn))
   }
+
+  def fieldType(field: FieldDescriptorProto): Tree = {
+    val fieldTypeClass = FieldTypeObject DOT fieldTypeClassNames(field.typ)
+
+    lazy val fieldSymbol: FieldSymbol = symbolTable.field(field).get
+
+    def enumObject = for {
+      enumDesc <- fieldSymbol.componentRef match {
+        case EnumRef(e) => Some(e)
+        case _ => None
+      }
+      enumSymbol <- symbolTable.enum(enumDesc)
+    } yield REF(enumSymbol.cls)
+
+    field.typ match {
+      case TYPE_MESSAGE | TYPE_GROUP => (NEW(fieldTypeClass)
+        //        APPLYTYPE (fieldSymbol.componentType)
+        APPLY (fieldSymbol.componentType DOT MessageInstanceName))
+      case TYPE_ENUM => NEW(fieldTypeClass) APPLY (enumObject.get)
+      case _ => fieldTypeClass
+    }
+  }
+
+  val fieldTypeClassNames: Map[FieldDescriptorProto.Type, String] = Map(
+    TYPE_DOUBLE -> "Double",
+    TYPE_FLOAT -> "Float",
+    TYPE_INT64 -> "Int64",
+    TYPE_UINT64 -> "UInt64",
+    TYPE_INT32 -> "Int32",
+    TYPE_FIXED64 -> "Fixed64",
+    TYPE_FIXED32 -> "Fixed32",
+    TYPE_BOOL -> "Bool",
+    TYPE_STRING -> "String",
+    TYPE_GROUP -> "Group",
+    TYPE_MESSAGE -> "Message",
+    TYPE_BYTES -> "Bytes",
+    TYPE_UINT32 -> "UInt32",
+    TYPE_ENUM -> "Enum",
+    TYPE_SFIXED32 -> "SFixed32",
+    TYPE_SFIXED64 -> "SFixed64",
+    TYPE_SINT32 -> "SInt32",
+    TYPE_SINT64 -> "SInt64")
 
   private def fieldRef(field: FieldDescriptorProto): Tree =
     REF(symbolTable.field(field).get.defn)
@@ -59,7 +101,7 @@ trait DescriptorProcess {
   private def messageTypeClassInstance: Process[ValDef] = process {
 
     val instanceType = appliedType(MessageTrait, List[Type](symbol.cls))
-    VAL("messageInstance", instanceType) := NEW(ANONDEF(instanceType) := BLOCK(
+    VAL(MessageInstanceName, instanceType) := NEW(ANONDEF(instanceType) := BLOCK(
       VAL("fields") withFlags (Flags.OVERRIDE) := (
         VectorClass
         APPLYTYPE appliedType(FieldTrait.typeConstructor, TYPE_REF("_"), TYPE_REF("_"), symbol.cls)
@@ -122,6 +164,7 @@ trait DescriptorProcess {
 
 object DescriptorProcess {
   private[DescriptorProcess] val BuilderParamName = "p"
+  private[DescriptorProcess] val MessageInstanceName = "messageInstance"
 
   def apply(desc: DescriptorProto, sym: ProtoSymbolTable) =
     new DescriptorProcess {

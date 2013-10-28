@@ -22,4 +22,6 @@ package object symbols {
   val OptionalObject: ModuleClassSymbol = RuntimePackage.newModuleClass("Optional")
   val RepeatedObject: ModuleClassSymbol = RuntimePackage.newModuleClass("Repeated")
 
+  val FieldTypeObject: ModuleClassSymbol = RuntimePackage.newModuleClass("FieldType")
+
 }
