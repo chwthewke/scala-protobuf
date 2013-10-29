@@ -1,6 +1,8 @@
 package net.chwthewke.scala.protobuf
 
 trait Repeated[C, M] extends Field[C, Vector[C], M] {
+  def packed: Boolean
+
   override def eval(in: Vector[C]): Vector[C] = in
   override def lift(f: Vector[C]): Vector[C] = f
 
@@ -13,11 +15,13 @@ trait Repeated[C, M] extends Field[C, Vector[C], M] {
 }
 
 object Repeated {
-  def apply[C, M](name: String, number: Int, fieldType: FieldType[C], getter: M => Vector[C]) = {
-    val (n, i, f) = (name, number, fieldType)
+
+  def apply[C, M](name: String, number: Int, packed: Boolean, fieldType: FieldType[C], getter: M => Vector[C]): Repeated[C, M] = {
+    val (n, i, p, f) = (name, number, packed, fieldType)
     new Repeated[C, M] {
       override def name: String = n
       override def number: Int = i
+      override def packed: Boolean = p
       override def get(m: M): Vector[C] = getter(m)
       override def fieldType: FieldType[C] = f
     }

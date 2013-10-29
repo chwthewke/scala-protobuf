@@ -59,6 +59,7 @@ trait PluginSyntax {
     def name = self.getName
     def label = self.getLabel
     def number = self.getNumber
+    def packed = self.getOptions.getPacked
     def typ = self.getType
     def typeName = if (self.hasTypeName) Some(self.getTypeName) else None
     def defaultValue = if (self.hasDefaultValue) Some(self.getDefaultValue) else None

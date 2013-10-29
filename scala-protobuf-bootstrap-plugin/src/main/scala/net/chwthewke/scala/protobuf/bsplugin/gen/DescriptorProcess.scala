@@ -45,9 +45,13 @@ trait DescriptorProcess {
       case _ => RepeatedObject
     }
 
+    val fieldArgs: Seq[Tree] = Seq[Tree](LIT(field.name), LIT(field.number)) ++
+      (if (field.label == LABEL_REPEATED) Seq[Tree](LIT(field.packed)) else Nil) ++
+      Seq[Tree](fieldType(field), WILDCARD DOT fieldSymbol.defn)
+
     VAL(fieldSymbol.defn) := (fieldTypeModule
       APPLYTYPE (fieldSymbol.componentType, symbol.cls)
-      APPLY (LIT(field.name), LIT(field.number), fieldType(field), WILDCARD DOT fieldSymbol.defn))
+      APPLY fieldArgs)
   }
 
   def fieldType(field: FieldDescriptorProto): Tree = {
@@ -99,7 +103,7 @@ trait DescriptorProcess {
     (REF(BuilderParamName) DOT "eval")(fieldRef(field))
 
   private def messageTypeClassInstance: Process[ValDef] = process {
-
+    // TODO make implicit ?
     val instanceType = appliedType(MessageTrait, List[Type](symbol.cls))
     VAL(MessageInstanceName, instanceType) := NEW(ANONDEF(instanceType) := BLOCK(
       VAL("fields") withFlags (Flags.OVERRIDE) := (
