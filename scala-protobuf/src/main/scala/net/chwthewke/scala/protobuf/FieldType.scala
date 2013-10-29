@@ -102,11 +102,13 @@ object FieldType {
     override val decoder = WireFormat.stringDecoder
   }
 
-  class Message[M](M: => protobuf.Message[M]) extends FieldType[M] {
+  class Message[M: protobuf.Message] extends FieldType[M] {
+    def M: protobuf.Message[M] = implicitly[protobuf.Message[M]]
+
     override val wireType = 2
     override lazy val decoder = for {
       updates <- anyFieldDecoder.untilEmpty.lengthPrefixed
-    } yield Builder[M](updates: _*).build(M)
+    } yield Builder[M](updates: _*).build
 
     private def fieldPart[C, T, M](f: => Field[C, T, M]): Decoder[FieldUpdate[M]] = for {
       value <- f.fieldType.decoder

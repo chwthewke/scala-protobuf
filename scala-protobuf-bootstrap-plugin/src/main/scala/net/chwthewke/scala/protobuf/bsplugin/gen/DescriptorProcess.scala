@@ -69,8 +69,7 @@ trait DescriptorProcess {
 
     field.typ match {
       case TYPE_MESSAGE | TYPE_GROUP => (NEW(fieldTypeClass)
-        //        APPLYTYPE (fieldSymbol.componentType)
-        APPLY (fieldSymbol.componentType DOT MessageInstanceName))
+        APPLYTYPE (fieldSymbol.componentType))
       case TYPE_ENUM => NEW(fieldTypeClass) APPLY (enumObject.get)
       case _ => fieldTypeClass
     }
@@ -103,9 +102,8 @@ trait DescriptorProcess {
     (REF(BuilderParamName) DOT "eval")(fieldRef(field))
 
   private def messageTypeClassInstance: Process[ValDef] = process {
-    // TODO make implicit ?
     val instanceType = appliedType(MessageTrait, List[Type](symbol.cls))
-    VAL(MessageInstanceName, instanceType) := NEW(ANONDEF(instanceType) := BLOCK(
+    VAL(MessageInstanceName, instanceType) withFlags (Flags.IMPLICIT) := NEW(ANONDEF(instanceType) := BLOCK(
       VAL("fields") withFlags (Flags.OVERRIDE) := (
         VectorClass
         APPLYTYPE appliedType(FieldTrait.typeConstructor, TYPE_REF("_"), TYPE_REF("_"), symbol.cls)
