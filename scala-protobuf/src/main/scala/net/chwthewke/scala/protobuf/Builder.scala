@@ -30,7 +30,7 @@ class Builder[M] private[protobuf] (fieldSet: Map[Field[_, _, M], Vector[Any]]) 
 
 object Builder {
 
-  def apply[M](mods: FieldUpdate[M]*)(implicit M: Message[M]): Builder[M] =
+  def apply[M](mods: FieldUpdate[M]*): Builder[M] =
     new Builder[M](Map()).apply(mods: _*)
 
   implicit def toSingularOps[C, T, M](field: Singular[C, T, M]) =
