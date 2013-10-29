@@ -86,7 +86,7 @@ trait DescriptorProcess {
     TYPE_BOOL -> "Bool",
     TYPE_STRING -> "String",
     TYPE_GROUP -> "Group",
-    TYPE_MESSAGE -> "Message",
+    TYPE_MESSAGE -> "MessageField",
     TYPE_BYTES -> "Bytes",
     TYPE_UINT32 -> "UInt32",
     TYPE_ENUM -> "Enum",

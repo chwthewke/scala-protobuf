@@ -102,39 +102,37 @@ object FieldType {
     override val decoder = WireFormat.stringDecoder
   }
 
-  class Message[M: protobuf.Message] extends FieldType[M] {
-    def M: protobuf.Message[M] = implicitly[protobuf.Message[M]]
-
+  class MessageField[M](implicit val M: protobuf.Message[M]) extends FieldType[M] {
     override val wireType = 2
     override lazy val decoder = for {
-      updates <- anyFieldDecoder.untilEmpty.lengthPrefixed
+      updates <- anyFieldDecoder[M].untilEmpty.lengthPrefixed
     } yield Builder[M](updates: _*).build
+  }
 
-    private def fieldPart[C, T, M](f: => Field[C, T, M]): Decoder[FieldUpdate[M]] = for {
-      value <- f.fieldType.decoder
-    } yield f <+= value
+  private def fieldPart[C, T, M](f: => Field[C, T, M]): Decoder[FieldUpdate[M]] = for {
+    value <- f.fieldType.decoder
+  } yield f <+= value
 
-    private def packedField[C, M](f: => Repeated[C, M]): Decoder[FieldUpdate[M]] = for {
-      values <- f.fieldType.decoder.packed
-    } yield f <++= values
+  private def packedField[C, M](f: => Repeated[C, M]): Decoder[FieldUpdate[M]] = for {
+    values <- f.fieldType.decoder.packed
+  } yield f <++= values
 
-    private def field(key: Int): Field[_, _, M] Or DecoderError =
-      (M.fields.find(_.number == key >> 3), key & 0x7) match {
-        case (Some(f), w) if f.fieldType.wireType == w => Good(f)
-        case (Some(_), _) => Bad(WireTypeMismatch)
-        case (None, _) => Bad(MalformedProtobuf) // TODO unknown fields
-      }
-
-    private def fieldDecoder(field: Field[_, _, M]): Decoder[FieldUpdate[M]] = field match {
-      case rep: Repeated[_, M] if rep.packed => packedField(rep)
-      case f => fieldPart(f)
+  private def field[M](key: Int)(implicit M: Message[M]): Field[_, _, M] Or DecoderError =
+    (M.fields.find(_.number == key >> 3), key & 0x7) match {
+      case (Some(f), w) if f.fieldType.wireType == w => Good(f)
+      case (Some(_), _) => Bad(WireTypeMismatch)
+      case (None, _) => Bad(MalformedProtobuf) // TODO unknown fields
     }
 
-    def anyFieldDecoder: Decoder[FieldUpdate[M]] = for {
-      key <- WireFormat.int32Decoder
-      field <- constant(field(key))
-      update <- fieldDecoder(field)
-    } yield update
+  private def fieldDecoder[M](field: Field[_, _, M]): Decoder[FieldUpdate[M]] = field match {
+    case rep: Repeated[_, M] if rep.packed => packedField(rep)
+    case f => fieldPart(f)
   }
+
+  def anyFieldDecoder[M: Message]: Decoder[FieldUpdate[M]] = for {
+    key <- WireFormat.int32Decoder
+    field <- constant(field(key))
+    update <- fieldDecoder(field)
+  } yield update
 
 }
