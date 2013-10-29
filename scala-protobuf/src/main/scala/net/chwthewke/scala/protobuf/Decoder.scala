@@ -17,12 +17,6 @@ trait Decoder[+A] {
     }
   }
 
-  def blindMap[B](f: A => B Or DecoderError): Decoder[B] = Decoder[B] {
-    run(_) match {
-      case (source, a) => (source, a.flatMap(f))
-    }
-  }
-
   def flatMap[B](f: A => Decoder[B]): Decoder[B] = new Decoder[B] {
     def run(source: ByteSource) = Decoder.this.run(source) match {
       case (newSource, Good(a)) => f(a).run(newSource)
@@ -65,11 +59,11 @@ object Decoder {
     override def run(source: ByteSource): (ByteSource, A Or DecoderError) = r(source)
   }
 
-  def blind[A](r: => A Or DecoderError) = Decoder[A]((_, r))
+  def constant[A](r: => A Or DecoderError) = Decoder[A]((_, r))
 
   trait Chainable {
     def self: Decoder[ByteSource]
-    def into[M](sink: Decoder[M]): Decoder[M] = self.blindMap(chained => sink.run(chained)._2)
+    def into[M](sink: Decoder[M]): Decoder[M] = self.flatMap(chained => constant(sink.run(chained)._2))
   }
 
   implicit def ToChainable(d: Decoder[ByteSource]): Chainable = new Chainable { def self = d }
@@ -83,6 +77,6 @@ object Decoder {
   case object VarInt32Overflow extends DecoderError
   case object InvalidEnumValue extends DecoderError
   case object InvalidUtf8 extends DecoderError
+  case object WireTypeMismatch extends DecoderError
 }
-
 

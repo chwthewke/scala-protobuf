@@ -1,8 +1,8 @@
 package net.chwthewke.scala.protobuf
 
-import net.chwthewke.scala.protobuf.scalautils.{Bad, Good, Or}
+import net.chwthewke.scala.protobuf.scalautils.{ Bad, Good, Or }
 import scala.annotation.tailrec
-import scala.util.{Success, Try}
+import scala.util.{ Success, Try }
 
 object WireFormat {
   import Decoder._
@@ -19,9 +19,9 @@ object WireFormat {
   val varIntDecoder: Decoder[Long] = new Decoder[Long] {
     @tailrec
     private def loop(
-                      source: ByteSource,
-                      read: Int,
-                      acc: Long): (ByteSource, Int, Long Or DecoderError) = {
+      source: ByteSource,
+      read: Int,
+      acc: Long): (ByteSource, Int, Long Or DecoderError) = {
 
       if (read > 9) (source, read, Bad(TooLongVarInt))
       else source.getByte match {
@@ -81,7 +81,7 @@ object WireFormat {
 
   val stringDecoder: Decoder[String] = for {
     bytes <- byteSeqDecoder
-    string <- Decoder.blind(Try(new String(bytes.toArray, "UTF-8")) match {
+    string <- constant(Try(new String(bytes.toArray, "UTF-8")) match {
       case Success(str) => Good(str)
       case _ => Bad(InvalidUtf8)
     })
