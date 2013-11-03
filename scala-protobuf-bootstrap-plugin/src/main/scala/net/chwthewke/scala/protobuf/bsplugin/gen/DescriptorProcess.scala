@@ -42,7 +42,7 @@ trait DescriptorProcess {
     val fieldTypeModule: ModuleClassSymbol = field.label match {
       case LABEL_REQUIRED => RequiredObject
       case LABEL_OPTIONAL => OptionalObject
-      case _ => RepeatedObject
+      case _              => RepeatedObject
     }
 
     val fieldArgs: Seq[Tree] = Seq[Tree](LIT(field.name), LIT(field.number)) ++
@@ -62,16 +62,16 @@ trait DescriptorProcess {
     def enumObject = for {
       enumDesc <- fieldSymbol.componentRef match {
         case EnumRef(e) => Some(e)
-        case _ => None
+        case _          => None
       }
       enumSymbol <- symbolTable.enum(enumDesc)
-    } yield REF(enumSymbol.cls)
+    } yield REF(enumSymbol.cls.fullName)
 
     field.typ match {
       case TYPE_MESSAGE | TYPE_GROUP => (NEW(fieldTypeClass)
         APPLYTYPE (fieldSymbol.componentType))
       case TYPE_ENUM => NEW(fieldTypeClass) APPLY (enumObject.get)
-      case _ => fieldTypeClass
+      case _         => fieldTypeClass
     }
   }
 
@@ -139,7 +139,7 @@ trait DescriptorProcess {
       fieldSymbol <- symbolTable.field(field)
       enum <- fieldSymbol.componentRef match {
         case EnumRef(e) => Some(e)
-        case _ => None
+        case _          => None
       }
       enumSymbol <- symbolTable.enum(enum)
       value <- enumSymbol.values.find {
@@ -150,13 +150,13 @@ trait DescriptorProcess {
     def explicitDefault(v: String): Option[Tree] = field.typ match {
       case TYPE_BOOL => Some(LIT(v.trim.toBoolean))
       case TYPE_ENUM => enumValueSymbol(v.trim)
-      case _ => None
+      case _         => None
     }
 
     def implicitDefault: Option[Tree] = field.label match {
       case LABEL_OPTIONAL => Some(REF(NoneModule)) // TODO should it be SOME(fieldObj DOT "defaultForType") ?
       case LABEL_REPEATED => Some(VectorClass DOT "empty")
-      case _ => None
+      case _              => None
     }
 
     defaultValue.flatMap(explicitDefault).map(SOME(_)).orElse(implicitDefault)
