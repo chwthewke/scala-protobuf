@@ -39,7 +39,7 @@
 
 
 package google.protobuf;
-option java_package = "com.google.protobuf";
+option java_package = "net.chwthewke.scala.protobuf";
 option java_outer_classname = "DescriptorProtos";
 
 // descriptor.proto must be optimized for speed because reflection-based
