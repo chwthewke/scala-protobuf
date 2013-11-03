@@ -1,6 +1,6 @@
 package net.chwthewke.scala.protobuf
 
-trait Optional[C, M] extends Singular[C, Option[C], M] {
+sealed trait Optional[C, M] extends Singular[C, Option[C], M] {
   override def eval(in: Vector[C]): Option[C] = in.lastOption
   override def lift(f: Option[C]): Vector[C] = f.toVector
 

@@ -1,6 +1,6 @@
 package net.chwthewke.scala.protobuf
 
-trait Repeated[C, M] extends Field[C, Vector[C], M] {
+sealed trait Repeated[C, M] extends Field[C, Vector[C], M] {
   def packed: Boolean
 
   override def eval(in: Vector[C]): Vector[C] = in
@@ -14,9 +14,28 @@ trait Repeated[C, M] extends Field[C, Vector[C], M] {
 
 }
 
+object Packed {
+
+  sealed trait Packable[T]
+
+  implicit val packableInt: Packable[Int] = new Packable[Int] {}
+  implicit val packableLong: Packable[Long] = new Packable[Long] {}
+  implicit val packableFloat: Packable[Float] = new Packable[Float] {}
+  implicit val packableDouble: Packable[Double] = new Packable[Double] {}
+  implicit val packableBoolean: Packable[Boolean] = new Packable[Boolean] {}
+  implicit def packableEnum[M <: Numbered: ProtobufEnum]: Packable[M] = new Packable[M] {}
+
+  def apply[C, M](name: String, number: Int, fieldType: FieldType[C], getter: M => Vector[C])(implicit P: Packable[C]) =
+    Repeated.mkField(name, number, true, fieldType, getter)
+
+}
+
 object Repeated {
 
-  def apply[C, M](name: String, number: Int, packed: Boolean, fieldType: FieldType[C], getter: M => Vector[C]): Repeated[C, M] = {
+  def apply[C, M](name: String, number: Int, fieldType: FieldType[C], getter: M => Vector[C]) =
+    mkField(name, number, false, fieldType, getter)
+
+  private[protobuf] def mkField[C, M](name: String, number: Int, packed: Boolean, fieldType: FieldType[C], getter: M => Vector[C]): Repeated[C, M] = {
     val (n, i, p, f) = (name, number, packed, fieldType)
     new Repeated[C, M] {
       override def name: String = n

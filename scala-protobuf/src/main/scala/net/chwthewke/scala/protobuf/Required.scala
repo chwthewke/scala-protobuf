@@ -1,6 +1,6 @@
 package net.chwthewke.scala.protobuf
 
-trait Required[C, M] extends Singular[C, C, M] {
+sealed trait Required[C, M] extends Singular[C, C, M] {
   override def eval(in: Vector[C]): C = in.lastOption.getOrElse(throw new IllegalStateException(s"Unintialized field $name."))
   override def lift(f: C): Vector[C] = Vector(f)
 }

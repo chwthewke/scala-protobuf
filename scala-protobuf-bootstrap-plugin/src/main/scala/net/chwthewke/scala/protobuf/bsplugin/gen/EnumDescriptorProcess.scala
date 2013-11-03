@@ -32,11 +32,17 @@ trait EnumDescriptorProcess {
     def valuesValDef: Tree = (VAL("values", appliedType(VectorClass, enumClassSymbol)) := (
       VectorClass.module DOT nme.apply) APPLYTYPE enumClassSymbol APPLY (symbol.values.values.map(REF)))
 
+    def protobufEnumType = appliedType(ProtobufEnumTrait, enumClassSymbol)
+
+    def implicitProtobufEnumDef: Tree = (VAL("protobufEnumInstance", protobufEnumType)
+      withFlags (Flags.IMPLICIT) := THIS)
+
     val objectDef: Tree =
       (OBJECTDEF(enumClassSymbol)
-        withParents (appliedType(ProtobufEnumTrait, enumClassSymbol)) := BLOCK(
+        withParents (protobufEnumType) := BLOCK(
           symbol.values.toVector.map((valueObjectDef _).tupled) :+
-            valuesValDef
+            valuesValDef :+
+            implicitProtobufEnumDef
         ))
 
     Vector[Tree](classDef, objectDef)

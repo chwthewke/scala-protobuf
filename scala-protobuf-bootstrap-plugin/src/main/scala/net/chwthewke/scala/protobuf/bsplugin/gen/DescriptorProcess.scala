@@ -40,14 +40,13 @@ trait DescriptorProcess {
     val fieldSymbol: FieldSymbol = symbolTable.field(field).get
 
     val fieldTypeModule: ModuleClassSymbol = field.label match {
-      case LABEL_REQUIRED => RequiredObject
-      case LABEL_OPTIONAL => OptionalObject
-      case _              => RepeatedObject
+      case LABEL_REQUIRED                 => RequiredObject
+      case LABEL_OPTIONAL                 => OptionalObject
+      case LABEL_REPEATED if field.packed => PackedObject
+      case _                              => RepeatedObject
     }
 
-    val fieldArgs: Seq[Tree] = Seq[Tree](LIT(field.name), LIT(field.number)) ++
-      (if (field.label == LABEL_REPEATED) Seq[Tree](LIT(field.packed)) else Nil) ++
-      Seq[Tree](fieldType(field), WILDCARD DOT fieldSymbol.defn)
+    val fieldArgs: Seq[Tree] = Seq[Tree](LIT(field.name), LIT(field.number), fieldType(field), WILDCARD DOT fieldSymbol.defn)
 
     VAL(fieldSymbol.defn) := (fieldTypeModule
       APPLYTYPE (fieldSymbol.componentType, symbol.cls)
