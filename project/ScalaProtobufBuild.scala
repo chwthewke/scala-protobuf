@@ -1,5 +1,3 @@
-import java.nio.charset.Charset
-import java.nio.file.Files
 import sbt._
 import sbt.Keys._
 
@@ -9,41 +7,49 @@ import sbtbuildinfo.Plugin._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
-// TODO : some mighty factoring
 object ScalaProtobufBuild extends Build {
 
   val ScalaProtobufDefaults = Seq(
     organization := "net.chwthewke",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.3",
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"))
 
-  val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.3"
+  val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
 
   val treehugger = "com.eed3si9n" %% "treehugger" % "0.3.0"
+  val scalatest = "org.scalatest" %% "scalatest" % "2.0" % "test"
 
+  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
+  
   val myBuildInfoSettings = buildInfoSettings ++ Seq(
     sourceGenerators in Compile <+= buildInfo,
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
     buildInfoPackage := "net.chwthewke.scala.protobuf",
-    managedSourceDirectories in Compile += (sourceManaged in Compile).value / "sbt-buildinfo"
+    unmanagedSourceDirectories in Compile += (sourceManaged in Compile).value / "sbt-buildinfo"
   )
 
   lazy val scalaProtobufParent = Project(
     id = "scala-protobuf-parent",
     base = file("."),
     settings = Project.defaultSettings ++
-      ScalaProtobufDefaults :+
-      (name := "scala-protobuf-parent"))
-    .aggregate(scalaProtobufRuntime, scalaProtobufBootstrapPlugin, scalaProtobufPlugin)
+      ScalaProtobufDefaults
+  ).settings(
+    name := "scala-protobuf-parent"
+  ).aggregate(
+    scalaProtobufRuntime,
+    scalaProtobufBootstrapPlugin,
+    scalaProtobufPlugin)
 
   lazy val scalaProtobufRuntime = Project(
     id = "scala-protobuf",
     base = file("scala-protobuf"),
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults ++
-      scalaProtobufSettings ++
-      (name := "scala-protobuf")
+      scalaProtobufSettings
+  ).settings(
+    name := "scala-protobuf",
+    libraryDependencies ++= Seq(scalatest, scalacheck)
   )
 
   lazy val scalaProtobufPlugin = Project(
@@ -70,16 +76,18 @@ object ScalaProtobufBuild extends Build {
       includeProtobufSettings ++
       myBuildInfoSettings ++
       assemblySettings ++
-      launcherSettings
+      ProtocPluginLauncher.settings
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
     mainClass := Some("net.chwthewke.scala.protobuf.bsplugin.run.PluginMain"),
     libraryDependencies ++= Seq(scalaz, treehugger)
   )
 
+  def protobufEclipseSettings = Seq(unmanagedSourceDirectories in Compile += (javaSource in PB.protobufConfig).value)
+
   def baseProtobufSettings = PB.protobufSettings ++ Seq(
-    version in PB.protobufConfig := "2.5.0"
-  )
+    version in PB.protobufConfig := "2.5.0") ++
+    protobufEclipseSettings
 
   def includeProtobufSettings =
     Seq(PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc")
@@ -90,44 +98,11 @@ object ScalaProtobufBuild extends Build {
       ProtocPlugin(
         "scala",
         (sourceManaged in Compile).value / "compiled_protobuf",
-        Some((launchBatName in assembly in scalaProtobufBootstrapPlugin).value),
+        Some((ProtocPluginLauncher.launcher in assembly in scalaProtobufBootstrapPlugin).value),
         _ ** "*.scala")),
     PB.generate in PB.protobufConfig <<=
       (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
   )
-
-  lazy val launchBatName: SettingKey[File] = settingKey[File]("Location of launcher .bat")
-
-  lazy val launchBat: TaskKey[File] = taskKey[File]("Generate .bat to launch an assembly jar")
-
-  lazy val launcherSettings = Seq(
-    launchBatName in assembly := target.value / "launch.bat",
-    launchBat := launchBat(
-      (launchBatName in assembly).value,
-      (outputPath in assembly).value,
-      javaHome.value,
-      streams.value.log),
-    assembly <<= assembly.dependsOn(launchBat in assembly))
-
-  def launchBat(batFile: File, jarFile: File, javaHome: Option[File], log: Logger) = {
-    import scala.collection.JavaConverters.asJavaIterableConverter
-
-    val relativeJar: String =
-      batFile.toPath.getParent.relativize(jarFile.toPath).toString
-
-    val javaHomeStr = javaHome.map(_.absolutePath + "\\").getOrElse("")
-
-    val lines = Seq(
-      "@echo off",
-      s"rem launches $relativeJar",
-      "cd %~dp0",
-      s"${javaHomeStr}java -jar $relativeJar"
-    )
-
-    Files.write(batFile.toPath, lines.asJava, Charset.forName("UTF-8"))
-
-    batFile
-  }
 
 
 }
