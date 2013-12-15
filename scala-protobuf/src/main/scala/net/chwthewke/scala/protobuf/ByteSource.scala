@@ -1,23 +1,22 @@
 package net.chwthewke.scala.protobuf
 
-import net.chwthewke.scala.protobuf.scalautils.{ Good, Bad, Or }
-import scala.language.implicitConversions
-import java.io.{ IOException, InputStream }
+import net.chwthewke.scala.protobuf.scalautils._
+import java.io.IOException
 
 trait ByteSource {
   def isEmpty: Boolean
-  def getByte: (ByteSource, Byte Or ByteSource.ByteSourceError)
-  def getBytes(n: Int): (ByteSource, IndexedSeq[Byte] Or ByteSource.ByteSourceError)
+  def getByte: (ByteSource, Byte Or ByteSource.Error)
+  def getBytes(n: Int): (ByteSource, IndexedSeq[Byte] Or ByteSource.Error)
 }
 
 object ByteSource {
-  trait ByteSourceError
-  case class Underfull(requested: Int, available: Int) extends ByteSourceError
-  case class IO(e: IOException) extends ByteSourceError
+  trait Error
+  case class Underfull(requested: Int, available: Int) extends Error
+  case class IO(e: IOException) extends Error
 
   implicit class ArrayByteSource(src: IndexedSeq[Byte]) extends ByteSource {
 
-    override def isEmpty: Boolean = src.length > 0
+    override def isEmpty: Boolean = src.length == 0
 
     override def getByte: (ByteSource, Byte Or Underfull) =
       if (src.isEmpty) (src, Bad(Underfull(1, 0)))

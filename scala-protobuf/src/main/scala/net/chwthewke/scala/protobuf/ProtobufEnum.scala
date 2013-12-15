@@ -1,6 +1,6 @@
 package net.chwthewke.scala.protobuf
 
-trait ProtobufEnum[V <: Numbered] {
+trait ProtobufEnum[V] extends Numbered[V] {
 
   def values: IndexedSeq[V]
 
@@ -11,7 +11,8 @@ trait ProtobufEnum[V <: Numbered] {
 
   def apply(ord: Int): V = values(ord)
 
-  def named(name: String): Option[V] = values.find(_.name == name)
-  def numbered(number: Int): Option[V] = values.find(_.number == number)
+  def named(name: String): Option[V] = values.find(this.name(_) == name)
+  def numbered(number: Int): Option[V] = values.find(this.number(_) == number)
 
 }
+

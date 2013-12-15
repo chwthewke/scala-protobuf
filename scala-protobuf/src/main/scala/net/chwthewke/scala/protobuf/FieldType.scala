@@ -1,138 +1,77 @@
 package net.chwthewke.scala.protobuf
 
-import net.chwthewke.scala.protobuf
-import scalautils._
-
 sealed trait FieldType[T] {
-  def wireType: Int
-
-  def decoder: Decoder[T]
+  def wireType: WireType.t
 }
 
 object FieldType {
 
-  import Decoder._
-  import DecoderOps._
-
   case object Int64 extends FieldType[Long] {
-    override val wireType = 0
-    override val decoder = WireFormat.int64Decoder
+    override val wireType = WireType.VarInt
   }
 
   case object UInt64 extends FieldType[Long] {
-    override val wireType = 0
-    override val decoder = WireFormat.uint64Decoder
+    override val wireType = WireType.VarInt
   }
 
   case object SInt64 extends FieldType[Long] {
-    override val wireType = 0
-    override val decoder = WireFormat.sint64Decoder
+    override val wireType = WireType.VarInt
   }
 
   case object Int32 extends FieldType[Int] {
-    override val wireType = 0
-    override val decoder = WireFormat.int32Decoder
+    override val wireType = WireType.VarInt
   }
 
   case object UInt32 extends FieldType[Int] {
-    override val wireType = 0
-    override val decoder = WireFormat.uint32Decoder
+    override val wireType = WireType.VarInt
   }
 
   case object SInt32 extends FieldType[Int] {
-    override val wireType = 0
-    override val decoder = WireFormat.sint32Decoder
+    override val wireType = WireType.VarInt
   }
 
   case object Bool extends FieldType[Boolean] {
-    override val wireType = 0
-    override val decoder = WireFormat.boolDecoder
+    override val wireType = WireType.VarInt
   }
 
-  class Enum[M <: Numbered](enum: => ProtobufEnum[M]) extends FieldType[M] {
-    override val wireType = 0
-    override lazy val decoder = for {
-      ord <- WireFormat.int32Decoder
-      res <- constant(enumByNumber(ord))
-    } yield res
-
-    def enumByNumber(ord: Int) = enum.numbered(ord) match {
-      case Some(e) => Good(e)
-      case None => Bad(InvalidEnumValue)
-    }
+  case class Enum[M](enum: ProtobufEnum[M]) extends FieldType[M] {
+    override val wireType = WireType.VarInt
   }
 
   case object Fixed64 extends FieldType[Long] {
-    override val wireType = 1
-    override val decoder = WireFormat.fixed64Decoder
+    override val wireType = WireType.Fixed64
   }
 
   case object SFixed64 extends FieldType[Long] {
-    override val wireType = 1
-    override val decoder = WireFormat.sfixed64Decoder
+    override val wireType = WireType.Fixed64
   }
 
   case object Double extends FieldType[Double] {
-    override val wireType = 1
-    override val decoder = WireFormat.doubleDecoder
+    override val wireType = WireType.Fixed64
   }
 
   case object Fixed32 extends FieldType[Int] {
-    override val wireType = 5
-    override val decoder = WireFormat.fixed32Decoder
+    override val wireType = WireType.Fixed32
   }
 
   case object SFixed32 extends FieldType[Int] {
-    override val wireType = 5
-    override val decoder = WireFormat.sfixed32Decoder
+    override val wireType = WireType.Fixed32
   }
 
   case object Float extends FieldType[Float] {
-    override val wireType = 5
-    override val decoder = WireFormat.floatDecoder
+    override val wireType = WireType.Fixed32
   }
 
   case object Bytes extends FieldType[ByteString] {
-    override val wireType = 2
-    override val decoder = WireFormat.bytesDecoder
+    override val wireType = WireType.LengthPrefixed
   }
 
   case object String extends FieldType[String] {
-    override val wireType = 2
-    override val decoder = WireFormat.stringDecoder
+    override val wireType = WireType.LengthPrefixed
   }
 
-  class MessageField[M](implicit val M: protobuf.Message[M]) extends FieldType[M] {
-    override val wireType = 2
-    override lazy val decoder = for {
-      updates <- anyFieldDecoder[M].untilEmpty.lengthPrefixed
-    } yield Builder[M](updates: _*).build
+  case class MessageField[M](M: Message[M]) extends FieldType[M] {
+    override val wireType = WireType.LengthPrefixed
   }
-
-  private def fieldPart[C, T, M](f: => Field[C, T, M]): Decoder[FieldUpdate[M]] = for {
-    value <- f.fieldType.decoder
-  } yield f <+= value
-
-  private def packedField[C, M](f: => Repeated[C, M]): Decoder[FieldUpdate[M]] = for {
-    values <- f.fieldType.decoder.packed
-  } yield f <++= values
-
-  private def field[M](key: Int)(implicit M: Message[M]): Field[_, _, M] Or DecoderError =
-    (M.fields.find(_.number == key >> 3), key & 0x7) match {
-      case (Some(f), w) if f.fieldType.wireType == w => Good(f)
-      case (Some(_), _) => Bad(WireTypeMismatch)
-      case (None, _) => Bad(MalformedProtobuf) // TODO unknown fields
-    }
-
-  private def fieldDecoder[M](field: Field[_, _, M]): Decoder[FieldUpdate[M]] = field match {
-    case rep: Repeated[_, M] if rep.packed => packedField(rep)
-    case f => fieldPart(f)
-  }
-
-  def anyFieldDecoder[M: Message]: Decoder[FieldUpdate[M]] = for {
-    key <- WireFormat.int32Decoder
-    field <- constant(field(key))
-    update <- fieldDecoder(field)
-  } yield update
 
 }

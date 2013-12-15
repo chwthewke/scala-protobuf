@@ -3,7 +3,6 @@ package net.chwthewke.scala.protobuf.bsplugin.symbols
 import com.google.protobuf.DescriptorProtos._
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
-import treehugger.forest._
 
 sealed abstract class ProtoSymbol {
   def file: FileDescriptorProto
@@ -19,11 +18,11 @@ case class MessageSymbol(
   source: Option[Location],
   fqn: String,
   descriptor: DescriptorProto,
-  cls: ClassSymbol,
-  obj: ModuleClassSymbol)
+  cls: String,
+  javaFqn: String)
   extends ProtoSymbol {
 
-  def mkString = s"$fqn in ${file.name} -> class $cls, object $obj"
+  def mkString = s"$fqn in ${file.name} -> class $cls ($javaFqn)"
 }
 
 case class FileSymbol(
@@ -31,8 +30,8 @@ case class FileSymbol(
   source: Option[Location],
   fqn: String,
   descriptor: FileDescriptorProto,
-  obj: ModuleClassSymbol,
-  pkg: ModuleClassSymbol)
+  obj: String,
+  pkg: String)
   extends ProtoSymbol {
 
   def mkString = s"${file.name} -> object $obj"
@@ -43,25 +42,14 @@ case class EnumSymbol(
   source: Option[Location],
   fqn: String,
   descriptor: EnumDescriptorProto,
-  cls: ClassSymbol,
-  values: Map[EnumValueDescriptorProto, ModuleClassSymbol])
+  cls: String,
+  javaFqn: String,
+  values: Map[EnumValueDescriptorProto, String])
   extends ProtoSymbol {
 
-  def mkString = s"$fqn in ${file.name} -> class $cls, values: ${
+  def mkString = s"$fqn in ${file.name} -> class $cls ($javaFqn), values: ${
     values.map { case (v, s) => s"${v.name} -> object $s" }.mkString(", ")
   }"
-}
-
-private[symbols] case class RawFieldSymbol(
-  file: FileDescriptorProto,
-  source: Option[Location],
-  fqn: String,
-  descriptor: FieldDescriptorProto,
-  defn: TermName)
-  extends ProtoSymbol {
-
-  def mkString = s"$fqn in ${file.name} -> member $defn"
-
 }
 
 case class FieldSymbol(
@@ -69,16 +57,10 @@ case class FieldSymbol(
   source: Option[Location],
   fqn: String,
   descriptor: FieldDescriptorProto,
-  defn: TermName,
-  componentRef: ProtoRef,
-  componentType: Type,
-  fieldType: Type)
+  defn: String)
   extends ProtoSymbol {
 
-  def this(fs: RawFieldSymbol, compRef: ProtoRef, compType: Type, fType: Type) = this(
-    fs.file, fs.source, fs.fqn, fs.descriptor, fs.defn,
-    compRef, compType, fType)
-
-  def mkString = s"$fqn in ${file.name} -> member $defn: $fieldType"
+  def mkString = s"$fqn in ${file.name} -> member $defn"
 
 }
+

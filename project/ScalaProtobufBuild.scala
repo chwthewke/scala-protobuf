@@ -17,7 +17,6 @@ object ScalaProtobufBuild extends Build {
 
   val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
 
-  val treehugger = "com.eed3si9n" %% "treehugger" % "0.3.0"
   val scalatest = "org.scalatest" %% "scalatest" % "2.0" % "test"
 
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
@@ -62,7 +61,7 @@ object ScalaProtobufBuild extends Build {
       myBuildInfoSettings
   ).settings(
     name := "scala-protobuf-plugin",
-    libraryDependencies ++= Seq(scalaz, treehugger)
+    libraryDependencies ++= Seq(scalaz)
   ).dependsOn(
     scalaProtobufRuntime
   )
@@ -80,7 +79,7 @@ object ScalaProtobufBuild extends Build {
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
     mainClass := Some("net.chwthewke.scala.protobuf.bsplugin.run.PluginMain"),
-    libraryDependencies ++= Seq(scalaz, treehugger)
+    libraryDependencies ++= Seq(scalaz)
   )
 
   def protobufEclipseSettings = Seq(unmanagedSourceDirectories in Compile += (javaSource in PB.protobufConfig).value)
