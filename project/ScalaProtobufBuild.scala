@@ -7,6 +7,8 @@ import sbtbuildinfo.Plugin._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
+import net.chwthewke.sbt.protobuf.{ProtobufSources => PS}
+
 object ScalaProtobufBuild extends Build {
 
   val ScalaProtobufDefaults = Seq(
@@ -37,8 +39,11 @@ object ScalaProtobufBuild extends Build {
     name := "scala-protobuf-parent"
   ).aggregate(
     scalaProtobufRuntime,
+    scalaProtobufRuntimeTests,
     scalaProtobufBootstrapPlugin,
-    scalaProtobufPlugin)
+    scalaProtobufPlugin,
+    scalaProtobufTestProtocol,
+    scalaProtobufReferenceTestProtocol)
 
   lazy val scalaProtobufRuntime = Project(
     id = "scala-protobuf",
@@ -49,6 +54,20 @@ object ScalaProtobufBuild extends Build {
   ).settings(
     name := "scala-protobuf",
     libraryDependencies ++= Seq(scalatest, scalacheck)
+  )
+
+  lazy val scalaProtobufRuntimeTests = Project(
+    id = "scala-protobuf-test",
+    base = file("scala-protobuf-test"),
+    settings = Project.defaultSettings ++
+      ScalaProtobufDefaults
+  ).settings(
+    name := "scala-protobuf-test",
+    libraryDependencies ++= Seq(scalatest, scalacheck)
+  ).dependsOn(
+    scalaProtobufRuntime,
+    scalaProtobufTestProtocol % "test",
+    scalaProtobufReferenceTestProtocol % "test"
   )
 
   lazy val scalaProtobufPlugin = Project(
@@ -80,6 +99,30 @@ object ScalaProtobufBuild extends Build {
     name := "scala-protobuf-bootstrap-plugin",
     mainClass := Some("net.chwthewke.scala.protobuf.bsplugin.run.PluginMain"),
     libraryDependencies ++= Seq(scalaz)
+  )
+
+  lazy val scalaProtobufTestProtocol = Project(
+    id = "scala-protobuf-test-protocol",
+    base = file("scala-protobuf-test-protocol"),
+    settings = Project.defaultSettings ++
+      ScalaProtobufDefaults ++
+      scalaProtobufSettings
+  ).settings(
+    name := "scala-protobuf-test-protocol"
+  ).dependsOn(
+    scalaProtobufRuntime
+  )
+
+  lazy val scalaProtobufReferenceTestProtocol = Project(
+    id = "scala-protobuf-reference-test-protocol",
+    base = file("scala-protobuf-reference-test-protocol"),
+    settings = Project.defaultSettings ++
+      PS.settings ++
+      protobufEclipseSettings
+  ).settings(
+    name := "scala-protobuf-reference-test-protocol",
+    sourceDirectory in PS.config := (sourceDirectory in(scalaProtobufTestProtocol, PB.protobufConfig)).value,
+    version in PB.protobufConfig := "2.5.0"
   )
 
   def protobufEclipseSettings = Seq(unmanagedSourceDirectories in Compile += (javaSource in PB.protobufConfig).value)

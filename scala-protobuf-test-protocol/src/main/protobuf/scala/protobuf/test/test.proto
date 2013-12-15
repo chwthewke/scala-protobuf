@@ -1,0 +1,54 @@
+package scala.protobuf;
+
+option java_outer_classname = "TestProtocol";
+option java_package = "net.chwthewke.scala.protobuf.test";
+message Primitives {
+    optional int32 anInt32 = 1;
+    optional uint32 anUInt32 = 2;
+    optional sint32 aSInt32 = 3;
+    optional fixed32 aFixed32 = 4;
+    optional sfixed32 aSFixed32 = 5;
+    optional int64 anInt64 = 6;
+    optional uint64 anUInt64 = 7;
+    optional sint64 aSInt64 = 8;
+    optional fixed64 aFixed64 = 9;
+    optional sfixed64 aSFixed64 = 10;
+    optional float aFloat = 11;
+    optional double aDouble = 12;
+    optional bool aBool = 13;
+}
+
+message LengthDelimited {
+    optional bytes aBytes = 2;
+    optional string aString = 1;
+}
+
+message AnEnum {
+    enum Values {
+        ONE = 1;
+        TWO = 2;
+        FILE_NOT_FOUND = 15015;
+    }
+
+    optional Values value = 1;
+}
+
+message LargeFieldNumbers {
+    optional int32 x = 127;
+    optional int32 y = 64000;
+}
+
+message RepeatedFields {
+    repeated AnEnum.Values values = 1;
+    repeated string strings = 2;
+    repeated int32 int32s = 3;
+}
+
+message PackedFields {
+    repeated int32 int32s = 1 [packed = true];
+    repeated int64 int64s = 2 [packed = true];
+    repeated fixed64 fixed64s = 3 [packed = true];
+    repeated AnEnum.Values values = 4 [packed = true];
+}
+
+
