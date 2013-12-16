@@ -1,11 +1,10 @@
 package net.chwthewke.scala.protobuf.bsplugin.symbols
 
-import com.google.protobuf.DescriptorProtos._
-import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location
+import net.chwthewke.scala.protobuf.bsplugin.interface._
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
 
 sealed abstract class ProtoSymbol {
-  def file: FileDescriptorProto
+  def file: FileDescriptor
   def source: Option[Location]
 
   def fqn: String
@@ -14,10 +13,10 @@ sealed abstract class ProtoSymbol {
 }
 
 case class MessageSymbol(
-  file: FileDescriptorProto,
+  file: FileDescriptor,
   source: Option[Location],
   fqn: String,
-  descriptor: DescriptorProto,
+  descriptor: Descriptor,
   cls: String,
   javaFqn: String)
   extends ProtoSymbol {
@@ -26,10 +25,10 @@ case class MessageSymbol(
 }
 
 case class FileSymbol(
-  file: FileDescriptorProto,
+  file: FileDescriptor,
   source: Option[Location],
   fqn: String,
-  descriptor: FileDescriptorProto,
+  descriptor: FileDescriptor,
   obj: String,
   pkg: String)
   extends ProtoSymbol {
@@ -38,13 +37,13 @@ case class FileSymbol(
 }
 
 case class EnumSymbol(
-  file: FileDescriptorProto,
+  file: FileDescriptor,
   source: Option[Location],
   fqn: String,
-  descriptor: EnumDescriptorProto,
+  descriptor: EnumDescriptor,
   cls: String,
   javaFqn: String,
-  values: Map[EnumValueDescriptorProto, String])
+  values: Map[EnumValueDescriptor, String])
   extends ProtoSymbol {
 
   def mkString = s"$fqn in ${file.name} -> class $cls ($javaFqn), values: ${
@@ -53,10 +52,10 @@ case class EnumSymbol(
 }
 
 case class FieldSymbol(
-  file: FileDescriptorProto,
+  file: FileDescriptor,
   source: Option[Location],
   fqn: String,
-  descriptor: FieldDescriptorProto,
+  descriptor: FieldDescriptor,
   defn: String)
   extends ProtoSymbol {
 

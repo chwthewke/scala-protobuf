@@ -1,12 +1,13 @@
 package net.chwthewke.scala.protobuf.bsplugin
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import scala.language.implicitConversions
 import scalaz._
 import scalaz.std.vector._
 import scalaz.syntax.{ MonadListenOps, MonadTellOps }
 
 trait ProcessSyntax {
+
+  import interface._
 
   object Process {
     def ask: Process[CodeGeneratorRequest] = rwstM.ask

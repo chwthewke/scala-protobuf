@@ -1,10 +1,8 @@
 package net.chwthewke.scala.protobuf.bsplugin.templates
 
-import com.google.protobuf.DescriptorProtos._
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.{ Type => FType }
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type._
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label._
 import net.chwthewke.scala.protobuf.bsplugin._
+import net.chwthewke.scala.protobuf.bsplugin.interface._
+import net.chwthewke.scala.protobuf.bsplugin.interface.field._
 import net.chwthewke.scala.protobuf.bsplugin.symbols._
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import scalaz.std.vector._
@@ -13,39 +11,39 @@ import scalaz.syntax.traverse._
 trait TemplatesProcess {
 
   def symbolTable: ProtoSymbolTable
-  def filesToGenerate: Vector[FileDescriptorProto]
+  def filesToGenerate: Vector[FileDescriptor]
 
   def apply: Process[Vector[ProtoDef]] =
     (filesToGenerate map (protoDef)).sequence
 
-  def protoDef(fileDescriptor: FileDescriptorProto): Process[ProtoDef] = for {
-    enums <- (fileDescriptor.enumTypeList map enumDef).sequence
-    messages <- (fileDescriptor.messageTypeList map messageDef).sequence
+  def protoDef(fileDescriptor: FileDescriptor): Process[ProtoDef] = for {
+    enums <- (fileDescriptor.enumTypes map enumDef).sequence
+    messages <- (fileDescriptor.messageTypes map messageDef).sequence
     file: FileSymbol = symbolTable.file(fileDescriptor).get
   } yield ProtoDef(file.pkg.toString, file.obj.toString, enums ++ messages)
 
-  def enumDef(desc: EnumDescriptorProto): Process[EnumDef] = process {
+  def enumDef(desc: EnumDescriptor): Process[EnumDef] = process {
     val enum: EnumSymbol = symbolTable.enum(desc).get
     EnumDef(enum.cls, (enum.values map (enumValueDef _).tupled).toSeq)
   }
 
-  def enumValueDef(desc: EnumValueDescriptorProto, name: String): EnumValueDef =
+  def enumValueDef(desc: EnumValueDescriptor, name: String): EnumValueDef =
     EnumValueDef(name, desc.number)
 
-  def messageDef(desc: DescriptorProto): Process[MessageDef] = for {
-    enums <- (desc.enumTypeList map enumDef).sequence
-    nested <- (desc.nestedTypeList map messageDef).sequence
+  def messageDef(desc: Descriptor): Process[MessageDef] = for {
+    enums <- (desc.enumTypes map enumDef).sequence
+    nested <- (desc.nestedTypes map messageDef).sequence
 
     fields <- fieldDefs(desc)
 
     message: MessageSymbol = symbolTable.message(desc).get
   } yield MessageDef(message.cls, fields, enums ++ nested)
 
-  def fieldDefs(desc: DescriptorProto): Process[FieldDefs] = for {
-    fields <- (desc.fieldList map fieldDef).sequence
+  def fieldDefs(desc: Descriptor): Process[FieldDefs] = for {
+    fields <- (desc.fields map fieldDef).sequence
   } yield FieldDefs(fields)
 
-  def fieldDef(desc: FieldDescriptorProto): Process[FieldDef] = process {
+  def fieldDef(desc: FieldDescriptor): Process[FieldDef] = process {
     val field: FieldSymbol = symbolTable.field(desc).get
 
     val (ctor, compMult) = desc.label match {
@@ -66,9 +64,9 @@ trait TemplatesProcess {
     def literalDefault: Option[String] = desc.defaultValue match {
       case None => None
       case Some(d) => typeRef match {
-        case BoolRef => Some(d)
+        case BoolRef    => Some(d)
         case EnumRef(e) => Some(s"$e.$d")
-        case _ => None
+        case _          => None
       }
     }
 
@@ -82,7 +80,7 @@ trait TemplatesProcess {
       compType, compMult, fieldDefault, fieldType)
   }
 
-  def primFieldType(typ: FType): String = "net.chwthewke.scala.protobuf.FieldType." + (typ match {
+  def primFieldType(typ: Type): String = "net.chwthewke.scala.protobuf.FieldType." + (typ match {
     case TYPE_BOOL     => "Bool"
     case TYPE_BYTES    => "Bytes"
     case TYPE_DOUBLE   => "Double"
@@ -103,7 +101,7 @@ trait TemplatesProcess {
 }
 
 object TemplatesProcess {
-  def apply(symTable: ProtoSymbolTable, files: Vector[FileDescriptorProto]): TemplatesProcess =
+  def apply(symTable: ProtoSymbolTable, files: Vector[FileDescriptor]): TemplatesProcess =
     new TemplatesProcess {
       override def symbolTable = symTable
       override def filesToGenerate = files

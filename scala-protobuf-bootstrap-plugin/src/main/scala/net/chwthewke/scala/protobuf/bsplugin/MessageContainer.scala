@@ -1,11 +1,11 @@
 package net.chwthewke.scala.protobuf.bsplugin
 
-import com.google.protobuf.DescriptorProtos.{ DescriptorProto, EnumDescriptorProto }
+import interface._
 
 trait MessageContainer[A] {
-  def messages(a: A): Vector[DescriptorProto]
+  def messages(a: A): Vector[Descriptor]
 
-  def enums(a: A): Vector[EnumDescriptorProto]
+  def enums(a: A): Vector[EnumDescriptor]
 
   def messageType: Int
 

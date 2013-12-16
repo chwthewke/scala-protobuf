@@ -1,15 +1,11 @@
 package net.chwthewke.scala.protobuf.bsplugin
 
-import com.google.protobuf.DescriptorProtos.FileDescriptorProto
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import net.chwthewke.scala.protobuf.bsplugin.symbols.ProtoSymbolTableProcess
-import net.chwthewke.scala.protobuf.bsplugin._
+import net.chwthewke.scala.protobuf.bsplugin.interface._
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import net.chwthewke.scala.protobuf.bsplugin.templates.ProtoDef
 import net.chwthewke.scala.protobuf.bsplugin.templates.TemplatesProcess
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaz.std.vector._
-import scalaz.syntax.traverse._
 
 trait Plugin {
 
@@ -20,25 +16,18 @@ trait Plugin {
       protoSymbolTable <- ProtoSymbolTableProcess()
       filesToGenerate <- filesToGenerate
       protoDefs <- TemplatesProcess(protoSymbolTable, filesToGenerate).apply
-      files = protoDefs map toFile
-    } yield CodeGeneratorResponse.newBuilder
-      .addAllFile(files.asJava)
-      .build
+    } yield CodeGeneratorResponse(protoDefs map toFile, None)
   }
 
-  def toFile(protoDef: ProtoDef): CodeGeneratorResponse.File =
-    CodeGeneratorResponse.File.newBuilder
-      .setName(protoDef.file)
-      .setContent(protoDef.all)
-      .build
+  def toFile(protoDef: ProtoDef): File = File(protoDef.file, protoDef.all)
 
-  def filesToGenerate: Process[Vector[FileDescriptorProto]] = {
-    val result: Process[Vector[FileDescriptorProto]] = for {
+  def filesToGenerate: Process[Vector[FileDescriptor]] = {
+    val result: Process[Vector[FileDescriptor]] = for {
       req <- Process.ask
-    } yield req.protoFileList.filter((fdp: FileDescriptorProto) => req.fileToGenerateList.contains(fdp.name))
+    } yield req.protoFiles.filter((fdp: FileDescriptor) => req.filesToGenerate.contains(fdp.name))
 
     result :+>> (
-      (l: Vector[FileDescriptorProto]) => s"Generating source for ${l.map(_.name).mkString(", ")}")
+      (l: Vector[FileDescriptor]) => s"Generating source for ${l.map(_.name).mkString(", ")}")
   }
 
 }

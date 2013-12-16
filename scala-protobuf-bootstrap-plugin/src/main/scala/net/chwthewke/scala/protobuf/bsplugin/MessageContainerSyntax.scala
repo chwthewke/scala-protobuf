@@ -1,31 +1,33 @@
 package net.chwthewke.scala.protobuf.bsplugin
 
-import com.google.protobuf.DescriptorProtos.{ DescriptorProto, FileDescriptorProto }
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
+import net.chwthewke.scala.protobuf.bsplugin.interface._
 import scalaz.syntax.Ops
 
 trait MessageContainerSyntax {
 
-  implicit val FileDescriptorInstance: MessageContainer[FileDescriptorProto] =
-    new MessageContainer[FileDescriptorProto] {
-      def messages(file: FileDescriptorProto) = file.messageTypeList
+  // TODO field numbers, migrate to Message.descriptor?
 
-      def enums(file: FileDescriptorProto) = file.enumTypeList
+  implicit val FileDescriptorInstance: MessageContainer[FileDescriptor] =
+    new MessageContainer[FileDescriptor] {
+      def messages(file: FileDescriptor) = file.messageTypes
 
-      def messageType = FileDescriptorProto.MESSAGE_TYPE_FIELD_NUMBER
+      def enums(file: FileDescriptor) = file.enumTypes
 
-      def enumType = FileDescriptorProto.ENUM_TYPE_FIELD_NUMBER
+      def messageType = 4
+
+      def enumType = 5
     }
 
-  implicit val MessageDescriptorInstance: MessageContainer[DescriptorProto] =
-    new MessageContainer[DescriptorProto] {
-      def messages(descriptor: DescriptorProto) = descriptor.nestedTypeList
+  implicit val MessageDescriptorInstance: MessageContainer[Descriptor] =
+    new MessageContainer[Descriptor] {
+      def messages(descriptor: Descriptor) = descriptor.nestedTypes
 
-      def enums(descriptor: DescriptorProto) = descriptor.enumTypeList
+      def enums(descriptor: Descriptor) = descriptor.enumTypes
 
-      def messageType = DescriptorProto.NESTED_TYPE_FIELD_NUMBER
+      def messageType = 3
 
-      def enumType = DescriptorProto.ENUM_TYPE_FIELD_NUMBER
+      def enumType = 4
     }
 
   implicit class MessageContainerOps[A](override val self: A)(implicit MC: MessageContainer[A]) extends Ops[A] {

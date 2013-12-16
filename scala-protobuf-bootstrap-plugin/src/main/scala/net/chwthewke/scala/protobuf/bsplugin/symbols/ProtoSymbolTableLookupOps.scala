@@ -1,41 +1,38 @@
 package net.chwthewke.scala.protobuf.bsplugin.symbols
 
-import com.google.protobuf.DescriptorProtos._
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label._
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.{ Type => FType }
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type._
+import net.chwthewke.scala.protobuf.bsplugin.interface._
+import net.chwthewke.scala.protobuf.bsplugin.interface.field.{ Type => FType }
+import net.chwthewke.scala.protobuf.bsplugin.interface.field._
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
 import scalaz.syntax.Ops
 import scalaz.std.option._
 
 trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
 
-  def file(descriptor: FileDescriptorProto): Option[FileSymbol] =
+  def file(descriptor: FileDescriptor): Option[FileSymbol] =
     self.symbols.collectFirst {
       case fs @ FileSymbol(_, _, _, f, _, _) if descriptor == f => fs
     }
 
-  def message(descriptor: DescriptorProto): Option[MessageSymbol] =
+  def message(descriptor: Descriptor): Option[MessageSymbol] =
     self.symbols.collectFirst {
       case ms @ MessageSymbol(_, _, _, m, _, _) if descriptor == m => ms
     }
 
-  def enum(descriptor: EnumDescriptorProto): Option[EnumSymbol] =
+  def enum(descriptor: EnumDescriptor): Option[EnumSymbol] =
     self.symbols.collectFirst {
       case es @ EnumSymbol(_, _, _, e, _, _, _) if descriptor == e => es
     }
 
-  def field(descriptor: FieldDescriptorProto): Option[FieldSymbol] =
+  def field(descriptor: FieldDescriptor): Option[FieldSymbol] =
     self.symbols.collectFirst {
       case fs @ FieldSymbol(_, _, _, f, _) if descriptor == f => fs
     }
 
-  def findByName(typename: String, referrerFqn: String, referrerSource: FileDescriptorProto): Option[ProtoSymbol] = {
+  def findByName(typename: String, referrerFqn: String, referrerSource: FileDescriptor): Option[ProtoSymbol] = {
 
     val reachableFiles = self.symbols.collect {
-      case fs: FileSymbol if referrerSource.dependencyList.contains(fs.descriptor.name) => fs.descriptor
+      case fs: FileSymbol if referrerSource.dependencies.contains(fs.descriptor.name) => fs.descriptor
     }
 
     (none[ProtoSymbol] /: fqns(typename, referrerFqn)) {
@@ -44,7 +41,7 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
     }
   }
 
-  private def findByFqn(fqn: String, reachableFiles: Seq[FileDescriptorProto]): Option[ProtoSymbol] = {
+  private def findByFqn(fqn: String, reachableFiles: Seq[FileDescriptor]): Option[ProtoSymbol] = {
     self.symbols.collectFirst { case ps: ProtoSymbol if ps.fqn == fqn && reachableFiles.contains(ps.file) => ps }
   }
 
@@ -62,7 +59,7 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
       .lift(fieldType, typeName).get
   }
 
-  private def referenceTypeSymbol(fqn: String, file: FileDescriptorProto): PartialFunction[(FType, Option[String]), ProtoRef] = {
+  private def referenceTypeSymbol(fqn: String, file: FileDescriptor): PartialFunction[(FType, Option[String]), ProtoRef] = {
     case (TYPE_ENUM, Some(typeName))    => enum(typeName, fqn, file)
     case (TYPE_GROUP, Some(typeName))   => message(typeName, fqn, file)
     case (TYPE_MESSAGE, Some(typeName)) => message(typeName, fqn, file)
@@ -82,12 +79,12 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
     case (TYPE_STRING, _) => StringRef
   }
 
-  def enum(typeName: String, fqn: String, file: FileDescriptorProto): ProtoRef =
+  def enum(typeName: String, fqn: String, file: FileDescriptor): ProtoRef =
     self.findByName(typeName, fqn, file).collect {
       case EnumSymbol(_, _, _, _, _, javaFqn, _) => EnumRef(javaFqn)
     }.get
 
-  def message(typeName: String, fqn: String, file: FileDescriptorProto): ProtoRef =
+  def message(typeName: String, fqn: String, file: FileDescriptor): ProtoRef =
     self.findByName(typeName, fqn, file).collect {
       case MessageSymbol(_, _, _, desc, _, javaFqn) => MessageRef(javaFqn)
     }.get

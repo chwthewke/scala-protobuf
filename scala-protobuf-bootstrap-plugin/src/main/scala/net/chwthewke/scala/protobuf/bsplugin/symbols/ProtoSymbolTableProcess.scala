@@ -2,16 +2,15 @@ package net.chwthewke.scala.protobuf.bsplugin.symbols
 
 import net.chwthewke.scala.protobuf.bsplugin.MessageContainer
 import net.chwthewke.scala.protobuf.bsplugin.Process
+import net.chwthewke.scala.protobuf.bsplugin._
+import net.chwthewke.scala.protobuf.bsplugin.interface._
 import net.chwthewke.scala.protobuf.bsplugin.syntax._
-import com.google.protobuf.DescriptorProtos._
-import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 
 trait ProtoSymbolTableProcess {
 
   def apply(): Process[ProtoSymbolTable] = {
     def symbols(req: CodeGeneratorRequest): Vector[ProtoSymbol] = for {
-      file <- req.protoFileList
+      file <- req.protoFiles
       symbol <- fileSymbol(file)
     } yield symbol
 
@@ -23,7 +22,7 @@ trait ProtoSymbolTableProcess {
     } yield syms
   }
 
-  def fileSymbol(descriptor: FileDescriptorProto): Vector[ProtoSymbol] = {
+  def fileSymbol(descriptor: FileDescriptor): Vector[ProtoSymbol] = {
     val ctx = Ctx(descriptor, Vector(), descriptor.pkg,
       s"${descriptor.javaPackage}.${descriptor.javaOuterClassName}")
 
@@ -37,7 +36,7 @@ trait ProtoSymbolTableProcess {
       contentSymbols(ctx, descriptor)
   }
 
-  def messageSymbol(ctx: Ctx, descriptor: DescriptorProto): Vector[ProtoSymbol] = {
+  def messageSymbol(ctx: Ctx, descriptor: Descriptor): Vector[ProtoSymbol] = {
 
     val name = Names.message(descriptor.name)
     val fqn = s"${ctx.pfqn}.${descriptor.name}"
@@ -54,10 +53,10 @@ trait ProtoSymbolTableProcess {
         fieldSymbols(ctx.copy(pfqn = fqn, jfqn = jfqn), descriptor))
   }
 
-  def enumSymbol(ctx: Ctx, descriptor: EnumDescriptorProto): EnumSymbol = {
+  def enumSymbol(ctx: Ctx, descriptor: EnumDescriptor): EnumSymbol = {
 
     val name = Names.message(descriptor.name)
-    val values = descriptor.valueList.map { v =>
+    val values = descriptor.values.map { v =>
       v -> Names.enumValue(v.name)
     }
 
@@ -87,14 +86,15 @@ trait ProtoSymbolTableProcess {
     messageSymbols ++ enumSymbols
   }
 
-  def fieldSymbols(ctx: Ctx, message: DescriptorProto): Vector[FieldSymbol] = {
-    message.fieldList.zipWithIndex.map {
+  def fieldSymbols(ctx: Ctx, message: Descriptor): Vector[FieldSymbol] = {
+    message.fields.zipWithIndex.map {
       case (f, i) =>
-        fieldSymbol(ctx.copy(path = ctx.path :+ DescriptorProto.FIELD_FIELD_NUMBER :+ i), f)
+        fieldSymbol(ctx.copy(path = ctx.path :+ 2 :+ i), f)
+      // TODO field number constant 2 = DescriptorProto.FIELD_FIELD_NUMBER
     }
   }
 
-  def fieldSymbol(ctx: Ctx, field: FieldDescriptorProto): FieldSymbol = {
+  def fieldSymbol(ctx: Ctx, field: FieldDescriptor): FieldSymbol = {
     val name = Names.field(field.name)
 
     FieldSymbol(
@@ -105,7 +105,7 @@ trait ProtoSymbolTableProcess {
       name)
   }
 
-  private case class Ctx(src: FileDescriptorProto, path: Vector[Int], pfqn: String, jfqn: String) {
+  private case class Ctx(src: FileDescriptor, path: Vector[Int], pfqn: String, jfqn: String) {
     def location = for {
       info <- src.sourceCodeInfo
       location <- info.findLocation(path)
