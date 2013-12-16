@@ -50,7 +50,8 @@ case class EnumDef(name: String, values: Seq[EnumValueDef]) extends Format with 
  */
 case class FieldDef(
   name: String, number: Int, ctor: String,
-  compType: String, compMult: Option[String], fieldType: String) extends Format {
+  compType: String, compMult: Option[String],
+  fieldDefault: FieldDefaultDef, fieldType: String) extends Format {
 
   def field = s"""val `$name`: $ctor[$compType] = 
                  |  $ctor[$compType]("$name", $number, $fieldType, _.`$name`)
@@ -60,7 +61,7 @@ case class FieldDef(
 
   def builderArg = s"${names.builderParam}.eval($ref)"
 
-  def classParam = s"`$name`: $classParamType$classParamDefault"
+  def classParam = s"`$name`: $classParamType${fieldDefault.mkString}"
 
   def classParamType = compMult match {
     case Some("Vector") => s"Vector[$compType]"
@@ -68,12 +69,26 @@ case class FieldDef(
     case _              => compType
   }
 
-  def classParamDefault = compMult match {
-    case Some("Vector") => " = Vector()"
-    case Some("Option") => " = None"
-    case _              => ""
-  }
 
+}
+
+sealed trait FieldDefaultDef {
+  def mkString: String
+}
+case object NoDefault extends FieldDefaultDef{
+  def mkString: String = ""
+}
+case object EmptyVector extends FieldDefaultDef{
+  def mkString: String = " = Vector()"
+}
+case object NoneOption extends FieldDefaultDef{
+  def mkString: String = " = None"
+}
+case class Literal(value: String) extends FieldDefaultDef{
+  def mkString: String = s" = $value"
+}
+case class SomeLiteral(value: String) extends FieldDefaultDef{
+  def mkString: String = s" = Some($value)"
 }
 
 case class FieldDefs(fieldDefs: Seq[FieldDef]) extends Format {

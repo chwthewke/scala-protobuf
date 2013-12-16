@@ -52,14 +52,13 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
     if (typename(0) == '.') Vector(typename.drop(1))
     else for (init <- referrerFqn.split('.').inits.toVector) yield (init :+ typename).mkString(".")
 
-  // TODO hackish
   def typeRef(fieldSymbol: FieldSymbol): ProtoRef = {
     val fieldDesc = fieldSymbol.descriptor
-    val fileDesc = fieldSymbol.file
     val fieldType = fieldDesc.typ
     val typeName = fieldDesc.typeName
-    val fqn = fieldSymbol.fqn
-    ((simpleTypeSymbol andThen PrimitiveRef.apply) orElse referenceTypeSymbol(fqn, fileDesc))
+    def fileDesc = fieldSymbol.file
+    def fqn = fieldSymbol.fqn
+    (simpleTypeSymbol orElse referenceTypeSymbol(fqn, fileDesc))
       .lift(fieldType, typeName).get
   }
 
@@ -69,19 +68,18 @@ trait ProtoSymbolTableLookupOps extends Ops[ProtoSymbolTable] {
     case (TYPE_MESSAGE, Some(typeName)) => message(typeName, fqn, file)
   }
 
-  private def simpleTypeSymbol: PartialFunction[(FType, Option[String]), String] = {
-    // TODO case class
-    case (TYPE_BOOL, _)   => "Boolean"
-    case (TYPE_BYTES, _)  => "net.chwthewke.scala.protobuf.ByteString"
-    case (TYPE_DOUBLE, _) => "Double"
+  private def simpleTypeSymbol: PartialFunction[(FType, Option[String]), PrimitiveRef] = {
+    case (TYPE_BOOL, _)   => BoolRef
+    case (TYPE_BYTES, _)  => ByteStringRef
+    case (TYPE_DOUBLE, _) => DoubleRef
     case (TYPE_FIXED32, _) | (TYPE_INT32, _) |
       (TYPE_SFIXED32, _) | (TYPE_SINT32, _) |
-      (TYPE_UINT32, _) => "Int"
+      (TYPE_UINT32, _) => IntRef
     case (TYPE_FIXED64, _) | (TYPE_INT64, _) |
       (TYPE_SFIXED64, _) | (TYPE_SINT64, _) |
-      (TYPE_UINT64, _) => "Long"
-    case (TYPE_FLOAT, _)  => "Float"
-    case (TYPE_STRING, _) => "String"
+      (TYPE_UINT64, _) => LongRef
+    case (TYPE_FLOAT, _)  => FloatRef
+    case (TYPE_STRING, _) => StringRef
   }
 
   def enum(typeName: String, fqn: String, file: FileDescriptorProto): ProtoRef =

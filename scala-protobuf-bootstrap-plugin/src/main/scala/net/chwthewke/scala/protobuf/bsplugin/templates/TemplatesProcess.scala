@@ -55,14 +55,31 @@ trait TemplatesProcess {
       case _                             => ("Repeated", Some("Vector"))
     }
 
-    val (compType, fieldType) = symbolTable.typeRef(field) match {
+    val typeRef: ProtoRef = symbolTable.typeRef(field)
+
+    val (compType, fieldType) = typeRef match {
       case PrimitiveRef(p) => (p, primFieldType(desc.typ))
       case EnumRef(e)      => (e, s"net.chwthewke.scala.protobuf.FieldType.Enum($e)")
       case MessageRef(m)   => (m, s"net.chwthewke.scala.protobuf.FieldType.MessageField($m)")
     }
 
+    def literalDefault: Option[String] = desc.defaultValue match {
+      case None => None
+      case Some(d) => typeRef match {
+        case BoolRef => Some(d)
+        case EnumRef(e) => Some(s"$e.$d")
+        case _ => None
+      }
+    }
+
+    val fieldDefault: FieldDefaultDef = desc.label match {
+      case LABEL_REPEATED => EmptyVector
+      case LABEL_OPTIONAL => literalDefault map SomeLiteral getOrElse NoneOption
+      case LABEL_REQUIRED => literalDefault map Literal getOrElse NoDefault
+    }
+
     FieldDef(field.defn, desc.number, ctor,
-      compType, compMult, fieldType)
+      compType, compMult, fieldDefault, fieldType)
   }
 
   def primFieldType(typ: FType): String = "net.chwthewke.scala.protobuf.FieldType." + (typ match {
