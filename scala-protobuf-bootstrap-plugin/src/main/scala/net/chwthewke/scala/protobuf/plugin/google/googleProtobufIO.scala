@@ -107,19 +107,18 @@ object googleProtobufIO extends interface.IO {
       packed = fdp.getOptions.getPacked,
       defaultValue = maybe(fdp)(_.hasDefaultValue)(_.getDefaultValue))
 
+  private implicit def codeGeneratorResponseToGoogleProtobuf(resp: CodeGeneratorResponse): PbCodeGeneratorResponse = {
+    import scala.collection.JavaConverters.seqAsJavaListConverter
+    import PbCodeGeneratorResponse.{ File => PbFile }
+    
+    PbCodeGeneratorResponse.newBuilder
+      .addAllFile(resp.files map (f => PbFile.newBuilder.setName(f.path).setContent(f.contents).build) asJava)
+      .build
+  }
+  
   def parseFrom(in: InputStream): Try[CodeGeneratorRequest] = Try { PbCodeGeneratorRequest.parseFrom(in) }
 
-  def write(defs: CodeGeneratorResponse): Unit =
-  {
-    import PbCodeGeneratorResponse.{ File => PbFile }
-    import scala.collection.JavaConverters.seqAsJavaListConverter
+  def write(defs: CodeGeneratorResponse): Unit = defs.writeTo(System.out)
 
-    val files = defs.files map (f => PbFile.newBuilder.setName(f.path).setContent(f.contents).build) asJava
-
-    PbCodeGeneratorResponse.newBuilder
-      .addAllFile(files)
-      .build
-      .writeTo(System.out)
-  }
 
 }

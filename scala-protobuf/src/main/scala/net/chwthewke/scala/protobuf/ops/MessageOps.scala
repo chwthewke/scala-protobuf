@@ -11,8 +11,9 @@ trait MessageOps[M] {
 
   def self: M
 
-  def toByteStream: Stream[Byte] =
-    ProtobufEncoder[M].run(self)
+  def toByteStream: Stream[Byte] = ProtobufEncoder[M].run(self)
+
+  def toByteArray: Array[Byte] = toByteStream.toArray
 }
 
 trait ToMessageOps {

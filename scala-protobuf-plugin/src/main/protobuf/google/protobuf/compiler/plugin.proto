@@ -45,7 +45,7 @@
 // flag "--${NAME}_out" is passed to protoc.
 
 package google.protobuf.compiler;
-option java_package = "net.chwhewke.scala.protobuf.compiler";
+option java_package = "net.chwthewke.scala.protobuf.compiler";
 option java_outer_classname = "PluginProtos";
 
 import "google/protobuf/descriptor.proto";
