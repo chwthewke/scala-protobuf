@@ -1,10 +1,10 @@
-package net.chwthewke.scala.protobuf.bsplugin.templates
+package net.chwthewke.scala.protobuf.plugin.templates
 
-import net.chwthewke.scala.protobuf.bsplugin._
-import net.chwthewke.scala.protobuf.bsplugin.interface._
-import net.chwthewke.scala.protobuf.bsplugin.interface.field._
-import net.chwthewke.scala.protobuf.bsplugin.symbols._
-import net.chwthewke.scala.protobuf.bsplugin.syntax._
+import net.chwthewke.scala.protobuf.plugin._
+import net.chwthewke.scala.protobuf.plugin.interface._
+import net.chwthewke.scala.protobuf.plugin.interface.field._
+import net.chwthewke.scala.protobuf.plugin.symbols._
+import net.chwthewke.scala.protobuf.plugin.syntax._
 import scalaz.std.vector._
 import scalaz.syntax.traverse._
 

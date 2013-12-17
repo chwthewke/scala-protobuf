@@ -1,7 +1,7 @@
-package net.chwthewke.scala.protobuf.bsplugin
+package net.chwthewke.scala.protobuf.plugin
 
-import net.chwthewke.scala.protobuf.bsplugin.syntax._
-import net.chwthewke.scala.protobuf.bsplugin.interface._
+import net.chwthewke.scala.protobuf.plugin.syntax._
+import net.chwthewke.scala.protobuf.plugin.interface._
 import scalaz.syntax.Ops
 
 trait MessageContainerSyntax {

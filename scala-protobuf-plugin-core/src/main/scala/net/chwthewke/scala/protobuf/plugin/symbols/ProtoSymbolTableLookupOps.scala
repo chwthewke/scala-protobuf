@@ -1,9 +1,9 @@
-package net.chwthewke.scala.protobuf.bsplugin.symbols
+package net.chwthewke.scala.protobuf.plugin.symbols
 
-import net.chwthewke.scala.protobuf.bsplugin.interface._
-import net.chwthewke.scala.protobuf.bsplugin.interface.field.{ Type => FType }
-import net.chwthewke.scala.protobuf.bsplugin.interface.field._
-import net.chwthewke.scala.protobuf.bsplugin.syntax._
+import net.chwthewke.scala.protobuf.plugin.interface._
+import net.chwthewke.scala.protobuf.plugin.interface.field.{ Type => FType }
+import net.chwthewke.scala.protobuf.plugin.interface.field._
+import net.chwthewke.scala.protobuf.plugin.syntax._
 import scalaz.syntax.Ops
 import scalaz.std.option._
 

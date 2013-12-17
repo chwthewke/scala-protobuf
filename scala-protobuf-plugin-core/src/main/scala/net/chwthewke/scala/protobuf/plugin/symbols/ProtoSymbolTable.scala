@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf.bsplugin.symbols
+package net.chwthewke.scala.protobuf.plugin.symbols
 
 case class ProtoSymbolTable(symbols: Vector[ProtoSymbol])
 

@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf.bsplugin
+package net.chwthewke.scala.protobuf.plugin
 
 import scala.language.implicitConversions
 import scalaz._

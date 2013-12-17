@@ -70,6 +70,14 @@ object ScalaProtobufBuild extends Build {
     scalaProtobufReferenceTestProtocol % "test"
   )
 
+  lazy val scalaProtobufPluginCore = Project(
+    id = "scala-protobuf-plugin-core",
+    base = file("scala-protobuf-plugin-core")
+  ).settings(
+      name := "scala-protobuf-plugin-core",
+      libraryDependencies ++= Seq(scalaz)
+  )
+
   lazy val scalaProtobufPlugin = Project(
     id = "scala-protobuf-plugin",
     base = file("scala-protobuf-plugin"),
@@ -82,7 +90,8 @@ object ScalaProtobufBuild extends Build {
     name := "scala-protobuf-plugin",
     libraryDependencies ++= Seq(scalaz)
   ).dependsOn(
-    scalaProtobufRuntime
+    scalaProtobufRuntime,
+    scalaProtobufPluginCore
   )
 
   lazy val scalaProtobufBootstrapPlugin = Project(
@@ -97,8 +106,10 @@ object ScalaProtobufBuild extends Build {
       ProtocPluginLauncher.settings
   ).settings(
     name := "scala-protobuf-bootstrap-plugin",
-    mainClass := Some("net.chwthewke.scala.protobuf.bsplugin.run.PluginMain"),
+    mainClass := Some("net.chwthewke.scala.protobuf.plugin.google.PluginMain"),
     libraryDependencies ++= Seq(scalaz)
+  ).dependsOn(
+    scalaProtobufPluginCore
   )
 
   lazy val scalaProtobufTestProtocol = Project(

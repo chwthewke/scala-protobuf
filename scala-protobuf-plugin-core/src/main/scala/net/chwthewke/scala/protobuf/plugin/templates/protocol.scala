@@ -1,4 +1,4 @@
-package net.chwthewke.scala.protobuf.bsplugin.templates
+package net.chwthewke.scala.protobuf.plugin.templates
 
 import scala.language.postfixOps
 

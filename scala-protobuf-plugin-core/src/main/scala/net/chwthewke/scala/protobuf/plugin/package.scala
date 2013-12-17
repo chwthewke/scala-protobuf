@@ -2,7 +2,7 @@ package net.chwthewke.scala.protobuf
 
 import scalaz.ReaderWriterState
 
-package object bsplugin {
+package object plugin {
   import interface._
 
   type IndexedSeq[+X] = scala.collection.immutable.IndexedSeq[X]

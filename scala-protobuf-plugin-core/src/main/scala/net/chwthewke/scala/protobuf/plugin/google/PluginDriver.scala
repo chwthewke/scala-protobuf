@@ -1,6 +1,6 @@
-package net.chwthewke.scala.protobuf.bsplugin.run
+package net.chwthewke.scala.protobuf.plugin.google
 
-import net.chwthewke.scala.protobuf.bsplugin._
+import net.chwthewke.scala.protobuf.plugin._
 import scala.util.Try
 import scala.util.control.NonFatal
 import java.io.PrintWriter

@@ -1,7 +1,4 @@
-package net.chwthewke.scala.protobuf.bsplugin.symbols
-
-import com.google.protobuf.DescriptorProtos.DescriptorProto
-import com.google.protobuf.DescriptorProtos.EnumDescriptorProto
+package net.chwthewke.scala.protobuf.plugin.symbols
 
 sealed trait ProtoRef {
   def javaFqn: String

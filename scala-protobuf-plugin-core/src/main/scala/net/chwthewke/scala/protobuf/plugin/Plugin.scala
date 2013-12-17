@@ -1,10 +1,10 @@
-package net.chwthewke.scala.protobuf.bsplugin
+package net.chwthewke.scala.protobuf.plugin
 
-import net.chwthewke.scala.protobuf.bsplugin.symbols.ProtoSymbolTableProcess
-import net.chwthewke.scala.protobuf.bsplugin.interface._
-import net.chwthewke.scala.protobuf.bsplugin.syntax._
-import net.chwthewke.scala.protobuf.bsplugin.templates.ProtoDef
-import net.chwthewke.scala.protobuf.bsplugin.templates.TemplatesProcess
+import net.chwthewke.scala.protobuf.plugin.symbols.ProtoSymbolTableProcess
+import net.chwthewke.scala.protobuf.plugin.interface._
+import net.chwthewke.scala.protobuf.plugin.syntax._
+import net.chwthewke.scala.protobuf.plugin.templates.ProtoDef
+import net.chwthewke.scala.protobuf.plugin.templates.TemplatesProcess
 import scalaz.std.vector._
 
 trait Plugin {

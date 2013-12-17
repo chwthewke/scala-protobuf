@@ -1,10 +1,10 @@
-package net.chwthewke.scala.protobuf.bsplugin.symbols
+package net.chwthewke.scala.protobuf.plugin.symbols
 
-import net.chwthewke.scala.protobuf.bsplugin.MessageContainer
-import net.chwthewke.scala.protobuf.bsplugin.Process
-import net.chwthewke.scala.protobuf.bsplugin._
-import net.chwthewke.scala.protobuf.bsplugin.interface._
-import net.chwthewke.scala.protobuf.bsplugin.syntax._
+import net.chwthewke.scala.protobuf.plugin.MessageContainer
+import net.chwthewke.scala.protobuf.plugin.Process
+import net.chwthewke.scala.protobuf.plugin._
+import net.chwthewke.scala.protobuf.plugin.interface._
+import net.chwthewke.scala.protobuf.plugin.syntax._
 
 trait ProtoSymbolTableProcess {
 

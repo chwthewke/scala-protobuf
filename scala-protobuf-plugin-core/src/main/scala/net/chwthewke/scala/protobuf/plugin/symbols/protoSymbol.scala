@@ -1,7 +1,7 @@
-package net.chwthewke.scala.protobuf.bsplugin.symbols
+package net.chwthewke.scala.protobuf.plugin.symbols
 
-import net.chwthewke.scala.protobuf.bsplugin.interface._
-import net.chwthewke.scala.protobuf.bsplugin.syntax._
+import net.chwthewke.scala.protobuf.plugin.interface._
+import net.chwthewke.scala.protobuf.plugin.syntax._
 
 sealed abstract class ProtoSymbol {
   def file: FileDescriptor
