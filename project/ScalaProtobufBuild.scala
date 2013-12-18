@@ -1,13 +1,13 @@
 import sbt._
 import sbt.Keys._
 
-import sbtprotobuf.{ProtobufPlugin => PB}
+import sbtprotobuf.{ ProtobufPlugin => PB }
 import sbtprotobuf.ProtobufPlugin.ProtocPlugin
 import sbtbuildinfo.Plugin._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
-import net.chwthewke.sbt.protobuf.{ProtobufSources => PS}
+import net.chwthewke.sbt.protobuf.{ ProtobufSources => PS }
 
 object ScalaProtobufBuild extends Build {
 
@@ -22,7 +22,7 @@ object ScalaProtobufBuild extends Build {
   val scalatest = "org.scalatest" %% "scalatest" % "2.0" % "test"
 
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
-  
+
   val myBuildInfoSettings = buildInfoSettings ++ Seq(
     sourceGenerators in Compile <+= buildInfo,
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
@@ -36,14 +36,14 @@ object ScalaProtobufBuild extends Build {
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults
   ).settings(
-    name := "scala-protobuf-parent"
-  ).aggregate(
-    scalaProtobufRuntime,
-    scalaProtobufRuntimeTests,
-    scalaProtobufBootstrapPlugin,
-    scalaProtobufPlugin,
-    scalaProtobufTestProtocol,
-    scalaProtobufReferenceTestProtocol)
+      name := "scala-protobuf-parent"
+    ).aggregate(
+        scalaProtobufRuntime,
+        scalaProtobufRuntimeTests,
+        scalaProtobufBootstrapPlugin,
+        scalaProtobufPlugin,
+        scalaProtobufTestProtocol,
+        scalaProtobufReferenceTestProtocol)
 
   lazy val scalaProtobufRuntime = Project(
     id = "scala-protobuf",
@@ -52,9 +52,9 @@ object ScalaProtobufBuild extends Build {
       ScalaProtobufDefaults ++
       scalaProtobufSettings
   ).settings(
-    name := "scala-protobuf",
-    libraryDependencies ++= Seq(scalatest, scalacheck)
-  )
+      name := "scala-protobuf",
+      libraryDependencies ++= Seq(scalatest, scalacheck)
+    )
 
   lazy val scalaProtobufRuntimeTests = Project(
     id = "scala-protobuf-test",
@@ -62,13 +62,13 @@ object ScalaProtobufBuild extends Build {
     settings = Project.defaultSettings ++
       ScalaProtobufDefaults
   ).settings(
-    name := "scala-protobuf-test",
-    libraryDependencies ++= Seq(scalatest, scalacheck)
-  ).dependsOn(
-    scalaProtobufRuntime,
-    scalaProtobufTestProtocol % "test",
-    scalaProtobufReferenceTestProtocol % "test"
-  )
+      name := "scala-protobuf-test",
+      libraryDependencies ++= Seq(scalatest, scalacheck)
+    ).dependsOn(
+        scalaProtobufRuntime,
+        scalaProtobufTestProtocol % "test",
+        scalaProtobufReferenceTestProtocol % "test"
+      )
 
   lazy val scalaProtobufPluginCore = Project(
     id = "scala-protobuf-plugin-core",
@@ -76,7 +76,7 @@ object ScalaProtobufBuild extends Build {
   ).settings(
       name := "scala-protobuf-plugin-core",
       libraryDependencies ++= Seq(scalaz)
-  )
+    )
 
   lazy val scalaProtobufPlugin = Project(
     id = "scala-protobuf-plugin",
@@ -87,12 +87,13 @@ object ScalaProtobufBuild extends Build {
       includeProtobufSettings ++
       myBuildInfoSettings
   ).settings(
-    name := "scala-protobuf-plugin",
-    libraryDependencies ++= Seq(scalaz)
-  ).dependsOn(
-    scalaProtobufRuntime,
-    scalaProtobufPluginCore
-  )
+      name := "scala-protobuf-plugin",
+      mainClass := Some("net.chwthewke.scala.protobuf.plugin.PluginMain"),
+      libraryDependencies ++= Seq(scalaz)
+    ).dependsOn(
+        scalaProtobufRuntime,
+        scalaProtobufPluginCore
+      )
 
   lazy val scalaProtobufBootstrapPlugin = Project(
     id = "scala-protobuf-bootstrap-plugin",
@@ -105,12 +106,12 @@ object ScalaProtobufBuild extends Build {
       assemblySettings ++
       ProtocPluginLauncher.settings
   ).settings(
-    name := "scala-protobuf-bootstrap-plugin",
-    mainClass := Some("net.chwthewke.scala.protobuf.plugin.google.PluginMain"),
-    libraryDependencies ++= Seq(scalaz)
-  ).dependsOn(
-    scalaProtobufPluginCore
-  )
+      name := "scala-protobuf-bootstrap-plugin",
+      mainClass := Some("net.chwthewke.scala.protobuf.plugin.google.PluginMain"),
+      libraryDependencies ++= Seq(scalaz)
+    ).dependsOn(
+        scalaProtobufPluginCore
+      )
 
   lazy val scalaProtobufTestProtocol = Project(
     id = "scala-protobuf-test-protocol",
@@ -119,10 +120,10 @@ object ScalaProtobufBuild extends Build {
       ScalaProtobufDefaults ++
       scalaProtobufSettings
   ).settings(
-    name := "scala-protobuf-test-protocol"
-  ).dependsOn(
-    scalaProtobufRuntime
-  )
+      name := "scala-protobuf-test-protocol"
+    ).dependsOn(
+        scalaProtobufRuntime
+      )
 
   lazy val scalaProtobufReferenceTestProtocol = Project(
     id = "scala-protobuf-reference-test-protocol",
@@ -131,10 +132,10 @@ object ScalaProtobufBuild extends Build {
       PS.settings ++
       protobufEclipseSettings
   ).settings(
-    name := "scala-protobuf-reference-test-protocol",
-    sourceDirectory in PS.config := (sourceDirectory in(scalaProtobufTestProtocol, PB.protobufConfig)).value,
-    version in PB.protobufConfig := "2.5.0"
-  )
+      name := "scala-protobuf-reference-test-protocol",
+      sourceDirectory in PS.config := (sourceDirectory in (scalaProtobufTestProtocol, PB.protobufConfig)).value,
+      version in PB.protobufConfig := "2.5.0"
+    )
 
   def protobufEclipseSettings = Seq(unmanagedSourceDirectories in Compile += (javaSource in PB.protobufConfig).value)
 
@@ -144,7 +145,6 @@ object ScalaProtobufBuild extends Build {
 
   def includeProtobufSettings =
     Seq(PB.includePaths in PB.protobufConfig += (sourceDirectory in Compile).value / "protobuf-inc")
-
 
   def scalaProtobufSettings = baseProtobufSettings ++ Seq(
     PB.plugins in PB.protobufConfig := Seq(
@@ -156,6 +156,5 @@ object ScalaProtobufBuild extends Build {
     PB.generate in PB.protobufConfig <<=
       (PB.generate in PB.protobufConfig).dependsOn(assembly in scalaProtobufBootstrapPlugin)
   )
-
 
 }
